@@ -16,6 +16,11 @@
   },
   "dependencies": {
     "@types/express": "^5.0.3",
-    "express": "^5.1.0"
+    "@types/jsonwebtoken": "^9.0.9",
+    "express": "^5.1.0",
+    "@repo/backend-common": "workspace:*",
+    "@repo/db": "workspace:*",
+    "jsonwebtoken": "^9.0.2",
+    "@repo/common": "workspace:*"
   }
 }

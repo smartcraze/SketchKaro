@@ -12,6 +12,10 @@
     "@types/bun": "latest"
   },
   "peerDependencies": {
-    "typescript": "^5"
+    "typescript": "^5",
+    "@repo/backend-common": "workspace:*"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
   }
 }
