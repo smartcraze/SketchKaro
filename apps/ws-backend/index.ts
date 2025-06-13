@@ -62,7 +62,7 @@ const server = Bun.serve({
       console.log(`✅ WebSocket connected: ${userId}`);
     },
 
-    message(ws, message) {
+    async message(ws, message) {
       const user = users.get(ws as unknown as WebSocket);
       if (!user) {
         console.warn("User not found for message");
@@ -99,6 +99,14 @@ const server = Bun.serve({
         case "chat":
           if (!parsedData.roomId || !parsedData.message) return;
           if (!user.rooms.includes(parsedData.roomId)) return;
+
+          await db.chat.create({
+            data: {
+              roomId: Number(parsedData.roomId),
+              message: parsedData.message,
+              userId: user.userId,
+            },
+          });
 
           for (const [client, u] of users.entries()) {
             if (u.rooms.includes(parsedData.roomId)) {
