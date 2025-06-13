@@ -12,14 +12,15 @@ const userRouter = Router();
 
 // signup route
 userRouter.post("/signup", async (req: Request, res: Response) => {
-    const { username, password, name } = createUserSchema.parse(req.body);
+    const { email, password, name } = createUserSchema.parse(req.body);
+
     try {
-        const existingUser = await db.user.findUnique({ where: { username } });
+        const existingUser = await db.user.findUnique({ where: { email } });
         if (existingUser) {
             res.status(400).json({ message: "User already exists" });
             return;
         }
-        const user = await db.user.create({ data: { username, password, name } });
+        const user = await db.user.create({ data: { email, password, name } });
         res.status(201).json(user);
     } catch (error) {
         res.status(400).json({ message: "User already exists" });
@@ -29,8 +30,8 @@ userRouter.post("/signup", async (req: Request, res: Response) => {
 // login route
 userRouter.post("/login", async (req: Request, res: Response) => {
     try {
-    const { username, password } = SignInSchema.parse(req.body);
-    const user = await db.user.findUnique({ where: { username } });
+    const { email, password } = SignInSchema.parse(req.body);
+    const user = await db.user.findUnique({ where: { email } });
     if (!user) {
         res.status(400).json({ message: "User not found" });
         return;

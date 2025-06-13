@@ -20,9 +20,10 @@ app.get("/", (req, res) => {
 
 
 app.post("/room", authMiddleware, async (req: Request, res: Response) => {
-  const { name } = createRoomSchema.parse(req.body);
   try {
-    const room = await db.room.create({ data: { name, userId: req.userId } });
+    const { slug } = createRoomSchema.parse(req.body);
+    const adminId = req.userId;
+    const room = await db.room.create({ data: { slug, adminId } });
     res.status(201).json(room);
   } catch (error) {
     res.status(400).json({ message: "Failed to create room" });
