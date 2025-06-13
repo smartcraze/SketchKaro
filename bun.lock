@@ -58,6 +58,7 @@
       },
       "peerDependencies": {
         "@repo/backend-common": "workspace:*",
+        "@repo/db": "workspace:*",
         "typescript": "^5",
       },
     },

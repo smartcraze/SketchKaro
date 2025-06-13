@@ -13,7 +13,8 @@
   },
   "peerDependencies": {
     "typescript": "^5",
-    "@repo/backend-common": "workspace:*"
+    "@repo/backend-common": "workspace:*",
+    "@repo/db": "workspace:*"
   },
   "dependencies": {
     "jsonwebtoken": "^9.0.2"

@@ -1,10 +1,9 @@
 import type { Request, Response } from "express";
 import { Router } from "express";
-import  jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/backend-common";
 import db from "@repo/db";
 import { createUserSchema, SignInSchema } from "@repo/common/types";
-import bcrypt from "bcrypt";
 
 
 const userRouter = Router();
@@ -36,15 +35,14 @@ userRouter.post("/login", async (req: Request, res: Response) => {
         res.status(400).json({ message: "User not found" });
         return;
     }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
+    if (user.password !== password) {
         res.status(400).json({ message: "Invalid password" });
         return;
     }
     const token = jwt.sign({ userId: user.id }, JWT_SECRET);
     res.status(200).json({ token });
     } catch (error) {
-        res.status(400).json({ message: "Invalid password" });
+        res.status(400).json({ message: "Something went wrong" });
     }
 });
 
