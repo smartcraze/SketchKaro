@@ -33,6 +33,7 @@
       "name": "web",
       "version": "0.1.0",
       "dependencies": {
+        "@repo/ui": "workspace:*",
         "next": "15.3.3",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",

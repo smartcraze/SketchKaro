@@ -77,7 +77,6 @@ const server = Bun.serve({
         return;
       }
       console.log("parsedData", parsedData);
-      // console.log("user", user);
 
       switch (parsedData.type) {
         case "ping":
