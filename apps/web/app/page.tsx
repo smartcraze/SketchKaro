@@ -1,9 +1,11 @@
-import { Button } from "@repo/ui/button";
+import { Hero } from "@/components/Hero";
+import { ModeToggle } from "@/components/ModeToggler";
 
 export default function Home() {
   return (
     <div>
-      <Button appName="Web">Click me</Button>
+      <ModeToggle />
+      <Hero />
     </div>
   );
 }

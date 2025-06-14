@@ -4,13 +4,13 @@ import userRouter from "./controllers/user";
 import db from "@repo/db";
 import { authMiddleware } from "./middleware";
 import { createRoomSchema } from "@repo/common/types";
-
+import cors from "cors";
 
 
 
 const app = express();
 app.use(express.json());
-
+app.use(cors());
 app.use("/user", userRouter);
 
 app.get("/", (req, res) => {
@@ -31,7 +31,7 @@ app.post("/room", authMiddleware, async (req: Request, res: Response) => {
 });
 
 
-app.get("/room/:roomId", authMiddleware, async (req: Request, res: Response) => {
+app.get("/room/:roomId", async (req: Request, res: Response) => {
   try {
     const { roomId } = req.params;
     const messages = await db.chat.findMany({

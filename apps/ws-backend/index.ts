@@ -3,6 +3,7 @@ import { JWT_SECRET } from "@repo/backend-common";
 import db from "@repo/db"; 
 import type { WebSocket } from "bun";
 
+
 interface User {
   ws: WebSocket;
   rooms: string[];
@@ -22,8 +23,7 @@ function checkToken(token: string): string | null {
 }
 
 const server = Bun.serve({
-  port: 8080,
-
+  port: 8080,  
   fetch(req, server) {
     const url = new URL(req.url);
     const token = url.searchParams.get("token");
