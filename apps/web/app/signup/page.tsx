@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
-export default  function SignupPage() {
+export default function SignupPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
@@ -19,32 +20,36 @@ export default  function SignupPage() {
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Signup Data:", formData);
-    const response = await axios.post(`${HTTP_BACKEND}/user/signup`, formData);
-    toast.success("Signup successful");
-    router.push("/signin");
+    try {
+      const response = await axios.post(`${HTTP_BACKEND}/user/signup`, formData);
+      toast.success("Signup successful");
+      router.push("/signin");
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <div className="min-h-screen bg-muted flex items-center justify-center px-4">
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
       >
-        <Card className="w-full max-w-md shadow-xl rounded-2xl">
-          <CardContent className="p-6 space-y-6">
-            <h1 className="text-2xl font-bold text-center">Create an Account</h1>
+        <Card className="shadow-2xl border-border rounded-2xl">
+          <CardContent className="p-8 space-y-6">
+            <div className="text-center space-y-1">
+              <h1 className="text-3xl font-semibold text-foreground">Get Started 🚀</h1>
+              <p className="text-sm text-muted-foreground">Create your Sketch Karo account</p>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
                 <Input
                   type="text"
@@ -56,7 +61,7 @@ export default  function SignupPage() {
                   required
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   type="email"
@@ -68,7 +73,7 @@ export default  function SignupPage() {
                   required
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   type="password"
@@ -84,6 +89,15 @@ export default  function SignupPage() {
                 Sign Up
               </Button>
             </form>
+            <p className="text-sm text-center text-muted-foreground">
+              Already have an account?{" "}
+              <span
+                className="text-primary underline cursor-pointer"
+                onClick={() => router.push("/signin")}
+              >
+                Sign in
+              </span>
+            </p>
           </CardContent>
         </Card>
       </motion.div>

@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,34 +19,37 @@ export default function SigninPage() {
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Signin Data:", formData);
-    // Handle signin logic here
-    const response = await axios.post(`${HTTP_BACKEND}/user/login`, formData);
-    document.cookie = `token=${response.data.token}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;
-    toast.success("Signin successful");
-    router.push("/");
+    try {
+      const response = await axios.post(`${HTTP_BACKEND}/user/login`, formData);
+      document.cookie = `token=${response.data.token}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;
+      toast.success("Signed in successfully");
+      router.push("/");
+    } catch (error) {
+      toast.error("Invalid credentials");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <div className="min-h-screen bg-muted flex items-center justify-center px-4">
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+        className="w-full max-w-md"
       >
-        <Card className="w-full max-w-md shadow-xl rounded-2xl">
-          <CardContent className="p-6 space-y-6">
-            <h1 className="text-2xl font-bold text-center">Sign In</h1>
+        <Card className="shadow-2xl border-border rounded-2xl">
+          <CardContent className="p-8 space-y-6">
+            <div className="text-center space-y-1">
+              <h1 className="text-3xl font-semibold text-foreground">Welcome Back 👋</h1>
+              <p className="text-sm text-muted-foreground">Sign in to continue to Sketch Karo</p>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   type="email"
@@ -57,7 +61,7 @@ export default function SigninPage() {
                   required
                 />
               </div>
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   type="password"
@@ -73,6 +77,12 @@ export default function SigninPage() {
                 Sign In
               </Button>
             </form>
+            <p className="text-sm text-center text-muted-foreground">
+              Don’t have an account?{" "}
+              <span className="text-primary underline cursor-pointer" onClick={() => router.push("/signup")}>
+                Sign up
+              </span>
+            </p>
           </CardContent>
         </Card>
       </motion.div>
