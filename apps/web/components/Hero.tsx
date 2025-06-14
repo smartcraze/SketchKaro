@@ -1,11 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Play, ArrowRight, Users, Zap, Palette } from 'lucide-react';
 
+import { Play, ArrowRight, Users, Zap, Palette } from 'lucide-react';
 export function Hero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:bg-gray-900">
-      {/* Animated Background Elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
         <div className="absolute top-40 right-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse animation-delay-2000"></div>
@@ -13,6 +12,7 @@ export function Hero() {
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 relative z-10">
+           
         <div className="text-center max-w-4xl mx-auto">
           {/* Badge */}
           <Badge className="mb-6 px-4 py-2 bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-700 border-blue-200 hover:scale-105 transition-transform duration-200">
@@ -36,6 +36,7 @@ export function Hero() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Button 
+              variant="default"
               size="lg" 
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
@@ -45,7 +46,7 @@ export function Hero() {
             <Button 
               size="lg" 
               variant="outline" 
-              className="px-8 py-4 text-lg font-semibold border-2 hover:bg-gray-50 transform hover:scale-105 transition-all duration-200"
+              className="px-8 py-4 text-lg font-semibold border-2  transform hover:scale-105 transition-all duration-200"
             >
               <Play className="w-5 h-5 mr-2" />
               Watch Demo

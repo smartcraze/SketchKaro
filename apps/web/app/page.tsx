@@ -1,10 +1,9 @@
 import { Hero } from "@/components/Hero";
-import { ModeToggle } from "@/components/ModeToggler";
-
+import Navbar from "@/components/Navbar";
 export default function Home() {
   return (
     <div>
-      <ModeToggle />
+      <Navbar />
       <Hero />
     </div>
   );
