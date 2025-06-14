@@ -42,10 +42,19 @@ app.get("/room/:roomId", authMiddleware, async (req: Request, res: Response) => 
     });
     res.status(200).json(messages);
   } catch (error) {
-    res.status(400).json({ message: "Failed to get room" });
+    res.status(400).json({ message: "Failed to failed to get the messages" });
   }
 });
 
+app.get("/room/:slug", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const room = await db.room.findUnique({ where: { slug } });
+    res.status(200).json(room);
+  } catch (error) {
+    res.status(400).json({ message: "Failed to get the room Id" });
+  }
+});
 
 
 
