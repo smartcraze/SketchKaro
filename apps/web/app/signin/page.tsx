@@ -29,7 +29,7 @@ export default function SigninPage() {
     console.log("Signin Data:", formData);
     // Handle signin logic here
     const response = await axios.post(`${HTTP_BACKEND}/user/login`, formData);
-    localStorage.setItem("token", response.data.token);
+    document.cookie = `token=${response.data.token}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;
     toast.success("Signin successful");
     router.push("/");
   };

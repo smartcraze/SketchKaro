@@ -7,9 +7,10 @@ import { Canvas } from "@/components/Canvas";
 
 export function RoomCanvas({roomId}: {roomId: string}) {
     const [socket, setSocket] = useState<WebSocket | null>(null);
-
+    const token = document.cookie.split("; ").find(row => row.startsWith("token="))?.split("=")[1];
+    
     useEffect(() => {
-        const ws = new WebSocket(`${WS_URL}?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJhYThmNjQ2NC00YThhLTRmZDYtOTQ0MS1hOGJjZDgyOGMzMTgiLCJpYXQiOjE3NDk4OTU5ODF9.b5mowhDPyeO75LpdFaXjy4Hm-Fxw6fNlhsI0uZwbWAY`)
+        const ws = new WebSocket(`${WS_URL}?token=${token}`)
 
         ws.onopen = () => {
             setSocket(ws);

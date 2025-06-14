@@ -1,8 +1,56 @@
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+"use client";
 
-import { Play, ArrowRight, Users, Zap, Palette } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { HTTP_BACKEND } from "@/Config";
+import axios from "axios";
+import { Play, ArrowRight, Users, Zap, Palette } from "lucide-react";
+import toast from "react-hot-toast";
+
 export function Hero() {
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [slug, setSlug] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    const cookieToken = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))
+      ?.split("=")[1];
+
+    setToken(cookieToken ?? null);
+    setIsLoggedIn(!!cookieToken);
+  }, []);
+
+  const handleJoinRoom = async () => {
+    if (!slug || !token) {
+      toast.error("Please enter a valid slug and ensure you're logged in.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${HTTP_BACKEND}/room`,
+        { slug },
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      );
+
+      const roomId = response.data.id;
+      router.push(`/canvas/${roomId}`);
+    } catch (error) {
+      console.error("Failed to create/join room:", error);
+      toast.error("Error joining room. Check console for details.");
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:bg-gray-900">
       <div className="absolute inset-0">
@@ -12,15 +60,12 @@ export function Hero() {
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20 relative z-10">
-           
         <div className="text-center max-w-4xl mx-auto">
-          {/* Badge */}
           <Badge className="mb-6 px-4 py-2 bg-gradient-to-r from-blue-600/10 to-purple-600/10 text-blue-700 border-blue-200 hover:scale-105 transition-transform duration-200">
             <Zap className="w-4 h-4 mr-2" />
             Real-time Collaboration Platform
           </Badge>
 
-          {/* Main Heading */}
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
             Create, Collaborate,
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block mt-2">
@@ -28,32 +73,53 @@ export function Hero() {
             </span>
           </h1>
 
-          {/* Subtitle */}
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-            The most intuitive canvas for visual collaboration. Draw, sketch, and brainstorm with your team in real-time, anywhere in the world.
+            The most intuitive canvas for visual collaboration. Draw, sketch,
+            and brainstorm with your team in real-time, anywhere in the world.
           </p>
 
-          {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <Button 
+            <Button
               variant="default"
-              size="lg" 
+              size="lg"
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               Start Creating
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="px-8 py-4 text-lg font-semibold border-2  transform hover:scale-105 transition-all duration-200"
-            >
-              <Play className="w-5 h-5 mr-2" />
-              Watch Demo
-            </Button>
+
+            {!isLoggedIn ? (
+              <Button
+                size="lg"
+                variant="outline"
+                className="px-8 py-4 text-lg font-semibold border-2 transform hover:scale-105 transition-all duration-200"
+                onClick={() => router.push("/signin")}
+              >
+                <Play className="w-5 h-5 mr-2" />
+                Sign in to Join Room
+              </Button>
+            ) : (
+              <div className="flex items-center gap-2 w-96">
+                <Input
+                  type="text"
+                  placeholder="Enter Room Slug"
+                  className="w-96 border-2"
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                />
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="px-8 py-4 text-lg font-semibold border-2 transform hover:scale-105 transition-all duration-200"
+                  onClick={handleJoinRoom}
+                >
+                  <Play className="w-5 h-5 mr-2" />
+                  Join Room
+                </Button>
+              </div>
+            )}
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-3 gap-8 max-w-lg mx-auto">
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-600 mb-1">10K+</div>
@@ -70,7 +136,7 @@ export function Hero() {
           </div>
         </div>
 
-        {/* Canvas Preview */}
+        {/* Canvas Preview Section */}
         <div className="mt-16 max-w-5xl mx-auto">
           <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transform hover:scale-105 transition-transform duration-500">
             <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -101,7 +167,9 @@ export function Hero() {
               <div className="text-center">
                 <Palette className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-500">Interactive Canvas Preview</p>
-                <p className="text-sm text-gray-400">Real-time collaboration in action</p>
+                <p className="text-sm text-gray-400">
+                  Real-time collaboration in action
+                </p>
               </div>
             </div>
           </div>
