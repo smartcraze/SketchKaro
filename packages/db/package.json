@@ -6,6 +6,11 @@
   "exports": {
     ".": "./index.ts"
   },
+  "scripts": {
+    "dev": "prisma migrate dev && prisma generate",
+    "migrate": "prisma migrate dev",
+    "studio": "prisma studio"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
