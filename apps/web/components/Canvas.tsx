@@ -1,73 +1,76 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { IconButton } from "./IconButton";
-import { Circle, Pencil, RectangleHorizontalIcon } from "lucide-react";
+import { Circle, Pencil, RectangleHorizontalIcon, Eraser } from "lucide-react";
 import { Game } from "@/draw/Games";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"; 
 
-export type Tool = "circle" | "rect" | "pencil";
+export type Tool = "circle" | "rect" | "pencil" | "eraser";
 
 export function Canvas({
-    roomId,
-    socket
+  roomId,
+  socket,
 }: {
-    socket: WebSocket;
-    roomId: string;
+  socket: WebSocket;
+  roomId: string;
 }) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [game, setGame] = useState<Game>();
-    const [selectedTool, setSelectedTool] = useState<Tool>("circle")
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [game, setGame] = useState<Game>();
+  const [selectedTool, setSelectedTool] = useState<Tool>("circle");
 
-    useEffect(() => {
-        game?.setTool(selectedTool);
-    }, [selectedTool, game]);
+  useEffect(() => {
+    game?.setTool(selectedTool);
+  }, [selectedTool, game]);
 
-    useEffect(() => {
+  useEffect(() => {
+    if (canvasRef.current) {
+      const g = new Game(canvasRef.current, roomId, socket);
+      setGame(g);
 
-        if (canvasRef.current) {
-            const g = new Game(canvasRef.current, roomId, socket);
-            setGame(g);
+      return () => {
+        g.destroy();
+      };
+    }
+  }, [canvasRef]);
 
-            return () => {
-                g.destroy();
-            }
-        }
-
-
-    }, [canvasRef]);
-
-    return <div style={{
-        height: "100vh",
-        overflow: "hidden"
-    }}>
-        <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
-        <Topbar setSelectedTool={setSelectedTool} selectedTool={selectedTool} />
+  return (
+    <div className="relative w-screen h-screen overflow-hidden">
+      <canvas ref={canvasRef} width={window.innerWidth} height={window.innerHeight}></canvas>
+      <Topbar selectedTool={selectedTool} setSelectedTool={setSelectedTool} />
     </div>
+  );
 }
 
-function Topbar({selectedTool, setSelectedTool}: {
-    selectedTool: Tool,
-    setSelectedTool: (s: Tool) => void
+function Topbar({
+  selectedTool,
+  setSelectedTool,
+}: {
+  selectedTool: Tool;
+  setSelectedTool: (s: Tool) => void;
 }) {
-    return <div style={{
-            position: "fixed",
-            top: 10,
-            left: 10
-        }}>
-            <div className="flex gap-t">
-                <IconButton 
-                    onClick={() => {
-                        setSelectedTool("pencil")
-                    }}
-                    activated={selectedTool === "pencil"}
-                    icon={<Pencil />}
-                />
-                <IconButton onClick={() => {
-                    setSelectedTool("rect")
-                }} activated={selectedTool === "rect"} icon={<RectangleHorizontalIcon />} ></IconButton>
-                <IconButton onClick={() => {
-                    setSelectedTool("circle")
-                }} activated={selectedTool === "circle"} icon={<Circle />}></IconButton>
-            </div>
-        </div>
+  return (
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-10">
+      <ToggleGroup
+        type="single"
+        value={selectedTool}
+        onValueChange={(value: Tool) => {
+          if (value) setSelectedTool(value);
+        }}
+        className="bg-muted border rounded-xl p-1 flex gap-2 shadow-md"
+      >
+        <ToggleGroupItem value="pencil" aria-label="Pencil">
+          <Pencil className="h-5 w-5" />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="rect" aria-label="Rectangle">
+          <RectangleHorizontalIcon className="h-5 w-5" />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="circle" aria-label="Circle">
+          <Circle className="h-5 w-5" />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="eraser" aria-label="Eraser">
+          <Eraser className="h-5 w-5" />
+        </ToggleGroupItem>
+      </ToggleGroup>
+    </div>
+  );
 }
