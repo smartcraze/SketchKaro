@@ -9,6 +9,7 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "@emnapi/core": "^1.4.3",
     "prettier": "^3.5.3",
     "turbo": "^2.5.4",
     "typescript": "5.8.2"
@@ -22,6 +23,7 @@
     "packages/*"
   ],
   "dependencies": {
+    "@emnapi/wasi-threads": "^1.0.2",
     "@types/cors": "^2.8.19",
     "cors": "^2.8.5",
     "lucide-react": "^0.515.0",
