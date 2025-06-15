@@ -1,84 +1,107 @@
-# Turborepo starter
+# ✨ Sketch Karo — Real-time Collaborative Whiteboard
 
-This Turborepo starter is maintained by the Turborepo core team.
+> Built with **Next.js**, **Turborepo**, **Canvas**, **WebSocket**, and **ShadCN UI**
+> Create, Collaborate & Innovate — all in real-time.
 
-## Using this example
+---
 
-Run the following command:
+![Preview](apps/web/public/preview.png)
 
-```sh
-npx create-turbo@latest
+## 🚀 Features
+
+* 🎨 Interactive whiteboard with pencil drawing
+* 🤝 Real-time collaboration with WebSockets
+* 🔐 JWT-based authentication (Sign In / Sign Up)
+* 🖥️ Full canvas preview with room joining by slug
+* 🌗 Dark/light mode toggle (ShadCN-powered)
+* 📬 Email capture form and responsive footer
+* 🔧 Built using **Turborepo** for modularity and speed
+
+---
+
+## 🧱 Tech Stack
+
+* **Frontend:** React, Next.js, Tailwind CSS, ShadCN UI
+* **Backend:** Node.js, Express, Socket
+* **Auth:** JWT + Cookie-based session management
+* **Canvas:** HTML5 Canvas API with freehand drawing
+* **Monorepo:** Turborepo + Shared Configurations
+
+---
+
+## 🖥️ Demo
+
+> 🔗 [Live Demo](https://sketchkaro.surajv.me)
+
+Login, draw with friends in real-time, and watch as ideas come to life — all inside your browser.
+
+---
+
+## 💪 Local Setup
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/smartcraze/sketchkaro
+
+# 2. Move into the directory
+cd sketchkaro
+
+# 3. Install dependencies (Turborepo handles all workspaces)
+bun install
+
+# 4. Start dev environment
+bun dev
 ```
 
-## What's inside?
+🧠 Pro Tip: Use `bun build` to test production builds across the monorepo.
 
-This Turborepo includes the following packages/apps:
+---
 
-### Apps and Packages
+## 💡 Room Flow
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+* Authenticated users can create or join rooms via slug
+* The backend ensures secure room creation & user tracking
+* Frontend renders real-time drawing with multi-user presence
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+---
 
-### Utilities
+## 🔒 Auth Flow
 
-This Turborepo has some additional tools already setup for you:
+* JWT stored in cookies
+* Login state is reactive across components (Navbar, Hero, etc.)
+* Protected routes and room access verification
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+---
 
-### Build
-
-To build all apps and packages, run the following command:
+## 📁 Project Structure
 
 ```
-cd my-turborepo
-pnpm build
+apps/
+  web/                → Frontend (Next.js)
+  http-backend/       → Express backend http
+  ws-backend/         → Bun inbuilt Websocket
+
+packages/
+  ui/            → ShadCN components
+  config/        → Tailwind + tsconfig + eslint
+  db/            → backend Primsa
+  common         → common zod schema
+  backend-commom → backend common config
+
+public/          → Static assets
 ```
 
-### Develop
+---
 
-To develop all apps and packages, run the following command:
+## 🙌 Acknowledgements
 
-```
-cd my-turborepo
-pnpm dev
-```
+* [ShadCN UI](https://ui.shadcn.com)
+* [webSocket](https://bun.sh)
+* [Turborepo](https://turbo.build)
+* [Lucide Icons](https://lucide.dev)
 
-### Remote Caching
+---
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+## 🧑‍💻 Author
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+Made with ❤️ by [Suraj Vishwakarma](https://twitter.com/surajv354)
