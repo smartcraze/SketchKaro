@@ -1,2 +1,2 @@
-export const HTTP_BACKEND = "https://sketchkaro.onrender.com"
-export const WS_URL = "https://sketchkaro-ws.onrender.com";
+export const HTTP_BACKEND = process.env.HTTP_BACKEND
+export const WS_URL = process.env.WS_URL
