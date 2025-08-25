@@ -3,7 +3,7 @@
 > Built with **Next.js**, **Turborepo**, **Canvas**, **WebSocket**, and **ShadCN UI**
 > Create, Collaborate & Innovate — all in real-time.
 
----
+## Architecture 
 
 <img width="2328" height="1072" alt="diagram-export-25-08-2025-22_38_17" src="https://github.com/user-attachments/assets/e1ce6e94-b352-4207-93c6-d9f06e896097" />
 
@@ -18,8 +18,6 @@
 * 📬 Email capture form and responsive footer
 * 🔧 Built using **Turborepo** for modularity and speed
 
----
-
 ## 🧱 Tech Stack
 
 * **Frontend:** React, Next.js, Tailwind CSS, ShadCN UI
@@ -28,15 +26,12 @@
 * **Canvas:** HTML5 Canvas API with freehand drawing
 * **Monorepo:** Turborepo + Shared Configurations
 
----
-
 ## 🖥️ Demo
 
 > 🔗 [Live Demo](https://sketchkaro.surajv.me)
 
 Login, draw with friends in real-time, and watch as ideas come to life — all inside your browser.
 
----
 
 ## 💪 Local Setup
 
@@ -56,7 +51,6 @@ bun dev
 
 🧠 Pro Tip: Use `bun build` to test production builds across the monorepo.
 
----
 
 ## 💡 Room Flow
 
@@ -64,15 +58,12 @@ bun dev
 * The backend ensures secure room creation & user tracking
 * Frontend renders real-time drawing with multi-user presence
 
----
 
 ## 🔒 Auth Flow
 
 * JWT stored in cookies
 * Login state is reactive across components (Navbar, Hero, etc.)
 * Protected routes and room access verification
-
----
 
 ## 📁 Project Structure
 
@@ -100,9 +91,5 @@ public/          → Static assets
 * [webSocket](https://bun.sh)
 * [Turborepo](https://turbo.build)
 * [Lucide Icons](https://lucide.dev)
-
----
-
-## 🧑‍💻 Author
 
 Made with ❤️ by [Suraj Vishwakarma](https://twitter.com/surajv354)
