@@ -5,7 +5,8 @@
 
 ---
 
-![Preview](apps/web/public/preview.png)
+<img width="2328" height="1072" alt="diagram-export-25-08-2025-22_38_17" src="https://github.com/user-attachments/assets/e1ce6e94-b352-4207-93c6-d9f06e896097" />
+
 
 ## 🚀 Features
 
