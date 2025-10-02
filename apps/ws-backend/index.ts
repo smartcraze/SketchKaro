@@ -154,11 +154,6 @@ const server = Bun.serve({
           );
           break;
 
-        // Cursor tracking removed for simplicity
-        case "cursor":
-          // Feature disabled
-          break;
-
         case "clear_all":
           if (!parsedData.roomId) return;
           if (!user.rooms.includes(parsedData.roomId)) return;
