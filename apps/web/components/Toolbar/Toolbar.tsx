@@ -19,17 +19,22 @@ export function Toolbar({
 }: ToolbarProps) {
   return (
     <div className="fixed top-6 left-1/2 -translate-x-1/2 z-10 max-w-[95vw]">
-      <div className="flex items-center gap-2 sm:gap-3 bg-background/95 backdrop-blur-sm border border-border/50 rounded-2xl p-2 shadow-lg overflow-x-auto">
-        {/* Tool Selection Group */}
+      <div
+        className="
+        flex items-center gap-2 sm:gap-4
+        bg-background/95 backdrop-blur-md
+        border border-border/60
+        rounded-2xl px-3 sm:px-4 py-2
+        shadow-xl overflow-x-auto scrollbar-none
+      "
+      >
         <ToolSelector
           selectedTool={selectedTool}
           setSelectedTool={setSelectedTool}
         />
 
-        {/* Separator */}
-        <div className="w-px h-6 bg-border hidden sm:block"></div>
+        <div className="hidden sm:block h-6 border-l border-border/60 mx-2" />
 
-        {/* Stroke Width Control */}
         <StrokeWidthSlider
           strokeWidth={strokeWidth}
           setStrokeWidth={setStrokeWidth}

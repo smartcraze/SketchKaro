@@ -21,26 +21,37 @@ export function ActionButtons({
       <Button
         onClick={onUndo}
         disabled={!canUndo}
-        className="h-10 w-10 p-0 rounded-xl hover:bg-accent transition-colors disabled:opacity-50"
+        className="h-10 w-10 p-0 rounded-xl cursor-pointer 
+                   hover:bg-accent transition-colors 
+                   hover:scale-105 transition-transform duration-150 
+                   disabled:opacity-50"
         aria-label="Undo (Ctrl+Z)"
         variant="ghost"
         size="sm"
       >
         <Undo className="h-4 w-4" />
       </Button>
+
       <Button
         onClick={onRedo}
         disabled={!canRedo}
-        className="h-10 w-10 p-0 rounded-xl hover:bg-accent transition-colors disabled:opacity-50"
+        className="h-10 w-10 p-0 rounded-xl cursor-pointer 
+                   hover:bg-accent transition-colors 
+                   hover:scale-105 transition-transform duration-150 
+                   disabled:opacity-50"
         aria-label="Redo (Ctrl+Y)"
         variant="ghost"
         size="sm"
       >
         <Redo className="h-4 w-4" />
       </Button>
+
       <Button
         onClick={onClear}
-        className="h-10 w-10 p-0 rounded-xl hover:bg-destructive/10 transition-colors text-destructive"
+        className="h-10 w-10 p-0 rounded-xl cursor-pointer 
+                   hover:bg-destructive/10 transition-colors 
+                   hover:scale-105 transition-transform duration-150 
+                   text-destructive"
         aria-label="Clear Canvas (Ctrl+K)"
         variant="ghost"
         size="sm"

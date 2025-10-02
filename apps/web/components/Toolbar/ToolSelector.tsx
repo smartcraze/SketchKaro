@@ -8,6 +8,12 @@ import {
   Eraser,
   Type,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ToolSelectorProps {
   selectedTool: Tool;
@@ -18,59 +24,51 @@ export function ToolSelector({
   selectedTool,
   setSelectedTool,
 }: ToolSelectorProps) {
+  const tools = [
+    { value: "pan", label: "Pan", icon: Hand },
+    { value: "pencil", label: "Pencil", icon: Pencil },
+    { value: "rect", label: "Rectangle", icon: RectangleHorizontalIcon },
+    { value: "circle", label: "Circle", icon: Circle },
+    { value: "eraser", label: "Eraser", icon: Eraser },
+    { value: "text", label: "Text", icon: Type },
+  ];
+
   return (
-    <div className="flex items-center flex-shrink-0">
-      <ToggleGroup
-        type="single"
-        value={selectedTool}
-        onValueChange={(value: Tool) => {
-          if (value) setSelectedTool(value);
-        }}
-        className="bg-muted/50 rounded-xl p-1 flex gap-1 shadow-sm"
-      >
-        <ToggleGroupItem
-          value="pan"
-          aria-label="Pan"
-          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-accent rounded-lg transition-all duration-200"
+    <TooltipProvider delayDuration={200}>
+      <div className="flex items-center flex-shrink-0">
+        <ToggleGroup
+          type="single"
+          value={selectedTool}
+          onValueChange={(value: Tool) => {
+            if (value) setSelectedTool(value);
+          }}
+          className="bg-muted/50 rounded-xl p-1 flex gap-1 shadow-sm"
         >
-          <Hand className="h-4 w-4" />
-        </ToggleGroupItem>
-        <ToggleGroupItem
-          value="pencil"
-          aria-label="Pencil"
-          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-accent rounded-lg transition-all duration-200"
-        >
-          <Pencil className="h-4 w-4" />
-        </ToggleGroupItem>
-        <ToggleGroupItem
-          value="rect"
-          aria-label="Rectangle"
-          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-accent rounded-lg transition-all duration-200"
-        >
-          <RectangleHorizontalIcon className="h-4 w-4" />
-        </ToggleGroupItem>
-        <ToggleGroupItem
-          value="circle"
-          aria-label="Circle"
-          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-accent rounded-lg transition-all duration-200"
-        >
-          <Circle className="h-4 w-4" />
-        </ToggleGroupItem>
-        <ToggleGroupItem
-          value="eraser"
-          aria-label="Eraser"
-          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-accent rounded-lg transition-all duration-200"
-        >
-          <Eraser className="h-4 w-4" />
-        </ToggleGroupItem>
-        <ToggleGroupItem
-          value="text"
-          aria-label="Text"
-          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground hover:bg-accent rounded-lg transition-all duration-200"
-        >
-          <Type className="h-4 w-4" />
-        </ToggleGroupItem>
-      </ToggleGroup>
-    </div>
+          {tools.map(({ value, label, icon: Icon }) => (
+            <ToggleGroupItem
+              key={value}
+              value={value}
+              aria-label={label}
+              className="
+                cursor-pointer flex items-center justify-center p-2 rounded-lg
+                transition-all duration-200 hover:bg-accent/70
+                data-[state=on]:bg-slate-500
+                data-[state=on]:text-primary-foreground 
+                data-[state=on]:shadow-md
+              "
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center justify-center w-full h-full">
+                    <Icon className="h-4 w-4" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">{label}</TooltipContent>
+              </Tooltip>
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </div>
+    </TooltipProvider>
   );
 }
