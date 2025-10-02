@@ -100,7 +100,7 @@ const server = Bun.serve({
           if (!parsedData.roomId || !parsedData.message) return;
           if (!user.rooms.includes(parsedData.roomId)) return;
 
-          await db.chat.create({
+          await db.drawing.create({
             data: {
               roomId: Number(parsedData.roomId),
               message: parsedData.message,
@@ -158,7 +158,7 @@ const server = Bun.serve({
 
           try {
             // Delete all chat messages for this room (which contain the drawing data)
-            await db.chat.deleteMany({
+            await db.drawing.deleteMany({
               where: {
                 roomId: Number(parsedData.roomId),
               },

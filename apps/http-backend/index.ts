@@ -6,8 +6,6 @@ import { authMiddleware } from "./middleware";
 import { createRoomSchema } from "@repo/common/types";
 import cors from "cors";
 
-
-
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -16,8 +14,6 @@ app.use("/user", userRouter);
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
-
-
 
 app.post("/room", authMiddleware, async (req: Request, res: Response) => {
   try {
@@ -30,15 +26,13 @@ app.post("/room", authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
-
 app.get("/room/:roomId", async (req: Request, res: Response) => {
   try {
     const { roomId } = req.params;
-    const messages = await db.chat.findMany({
+    const messages = await db.drawing.findMany({
       where: { roomId: Number(roomId) },
       take: 50,
       orderBy: { createdAt: "desc" },
-
     });
     res.status(200).json(messages);
   } catch (error) {
@@ -56,12 +50,6 @@ app.get("/room/:slug", authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
-
-
-
-
 app.listen(3001, () => {
   console.log(`Server is running on port 3001`);
 });
-
-
