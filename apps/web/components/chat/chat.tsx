@@ -116,10 +116,8 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
     const handleMessage = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
-        console.log("💬 Chat component received message:", data);
         
         if (data.type === 'chat_message' && data.roomId === roomId) {
-          console.log("✅ Processing chat message for room:", roomId);
           const newMsg: ChatMessage = {
             id: `${data.from}-${Date.now()}`,
             message: data.message,
@@ -129,14 +127,16 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
             roomId: data.roomId,
           };
           
-          setMessages(prev => {
-            console.log("📝 Adding message to chat:", newMsg);
-            return [...prev, newMsg];
-          });
+          setMessages(prev => [...prev, newMsg]);
           
-          // Increment unread count if chat is closed and message is not from current user
-          if (!isOpen && data.from !== currentUser) {
-            setUnreadCount(prev => prev + 1);
+          // Auto-open chat and reset unread count when message is from another user
+          if (data.from !== currentUser) {
+            if (!isOpen) {
+              // Auto-open chat when new message arrives from another user
+              onToggle();
+            }
+            // Reset unread count since chat will be visible
+            setUnreadCount(0);
           }
         }
       } catch (error) {
@@ -146,7 +146,7 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
 
     socket.addEventListener('message', handleMessage);
     return () => socket.removeEventListener('message', handleMessage);
-  }, [socket, roomId, isOpen, currentUser]);
+  }, [socket, roomId, isOpen, currentUser]); // Removed onToggle from dependency array
 
   const sendMessage = () => {
     if (!socket || !newMessage.trim() || !roomId) return;
@@ -231,7 +231,7 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-80 h-96 bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col">
+    <div className="fixed bottom-6 right-6 z-50 w-80 h-[32rem] bg-white dark:bg-gray-800 rounded-lg shadow-2xl border border-gray-200 dark:border-gray-700 flex flex-col">
       {/* Chat Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-blue-600 text-white rounded-t-lg">
         <div className="flex items-center space-x-2">
