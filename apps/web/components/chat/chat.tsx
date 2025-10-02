@@ -116,8 +116,10 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
     const handleMessage = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
+        console.log("💬 Chat component received message:", data);
         
         if (data.type === 'chat_message' && data.roomId === roomId) {
+          console.log("✅ Processing chat message for room:", roomId);
           const newMsg: ChatMessage = {
             id: `${data.from}-${Date.now()}`,
             message: data.message,
@@ -127,7 +129,10 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
             roomId: data.roomId,
           };
           
-          setMessages(prev => [...prev, newMsg]);
+          setMessages(prev => {
+            console.log("📝 Adding message to chat:", newMsg);
+            return [...prev, newMsg];
+          });
           
           // Increment unread count if chat is closed and message is not from current user
           if (!isOpen && data.from !== currentUser) {

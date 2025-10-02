@@ -27,13 +27,22 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
     const ws = new WebSocket(`${WS_URL}?token=${token}`);
 
     ws.onopen = () => {
+      console.log("✅ WebSocket connected, joining room:", roomId);
       setSocket(ws);
       const data = JSON.stringify({
         type: "join_room",
         roomId,
       });
-      console.log(data);
       ws.send(data);
+    };
+
+    ws.onerror = (error) => {
+      console.error("❌ WebSocket error:", error);
+    };
+
+    ws.onclose = (event) => {
+      console.log("🔌 WebSocket closed:", event.code, event.reason);
+      setSocket(null);
     };
 
     return () => {

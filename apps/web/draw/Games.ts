@@ -312,6 +312,11 @@ export class Game {
     this.socket.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
 
+      // Let Chat component handle chat messages - don't process them here
+      if (data.type === "chat_message") {
+        return; // Skip processing, let Chat component handle it
+      }
+
       // Handle direct clear_all message from server
       if (data.type === "clear_all") {
         console.log("Received clear_all command from server");
