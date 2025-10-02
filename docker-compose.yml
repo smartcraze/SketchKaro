@@ -1,14 +1,101 @@
 services:
-  db:
-    image: postgres:latest
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: mydatabase
+      POSTGRES_DB: sketchkaro
+      POSTGRES_USER: sketchkaro_user
+      POSTGRES_PASSWORD: sketchkaro_password
     ports:
       - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sketchkaro-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sketchkaro_user -d sketchkaro"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  http-backend:
+    build:
+      context: .
+      dockerfile: apps/http-backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://sketchkaro_user:sketchkaro_password@postgres:5432/sketchkaro
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - PORT=3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - sketchkaro-network
+
+  ws-backend:
+    build:
+      context: .
+      dockerfile: apps/ws-backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://sketchkaro_user:sketchkaro_password@postgres:5432/sketchkaro
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
+      - PORT=8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - sketchkaro-network
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_HTTP_BACKEND=http://localhost:3001
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8080
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - http-backend
+      - ws-backend
+    networks:
+      - sketchkaro-network
+
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/http-backend/Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://sketchkaro_user:sketchkaro_password@postgres:5432/sketchkaro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - sketchkaro-network
+    command: >
+      sh -c "
+        cd /app/packages/db &&
+        bunx prisma migrate deploy &&
+        bunx prisma generate
+      "
+    restart: "no"
 
 volumes:
-  db_data:
+  postgres_data:
+    driver: local
+
+networks:
+  sketchkaro-network:
+    driver: bridge
