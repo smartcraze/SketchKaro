@@ -284,6 +284,8 @@ export class Game {
   private drawSmoothPath(path: { x: number; y: number }[]) {
     if (path.length < 2) return;
 
+    this.ctx.lineCap = "round";
+    this.ctx.lineJoin = "round";
     this.ctx.beginPath();
     this.ctx.moveTo(path[0].x, path[0].y);
 
@@ -370,8 +372,19 @@ export class Game {
 
     if (this.selectedTool === "eraser" && this.isDrawing) {
       this.isDrawing = false;
-      // For now, eraser will clear everything in the path area
-      // This is a simple implementation - could be enhanced to only erase overlapping shapes
+      if (this.currentPath.length > 1) {
+        const shape: Shape = {
+          type: "eraser",
+          startX: this.currentPath[0].x,
+          startY: this.currentPath[0].y,
+          endX: this.currentPath[this.currentPath.length - 1].x,
+          endY: this.currentPath[this.currentPath.length - 1].y,
+          strokeWidth: this.strokeWidth, // Use actual stroke width
+          path: this.currentPath,
+        };
+        this.shapeManager.addShape(shape);
+        this.sendShapeToServer(shape);
+      }
       this.currentPath = [];
       this.lastPoint = null;
       this.clearCanvas();
@@ -469,9 +482,21 @@ export class Game {
 
             this.clearCanvas();
             if (this.currentPath.length > 1) {
-              this.ctx.strokeStyle = this.selectedColor;
-              this.ctx.lineWidth = this.strokeWidth;
-              this.drawSmoothPath(this.currentPath);
+              if (this.selectedTool === "eraser") {
+                // For eraser, show the erasing preview
+                this.ctx.save();
+                this.ctx.globalCompositeOperation = "destination-out";
+                this.ctx.lineWidth = this.strokeWidth; // Use actual stroke width
+                this.ctx.lineCap = "round";
+                this.ctx.lineJoin = "round";
+                this.drawSmoothPath(this.currentPath);
+                this.ctx.restore();
+              } else {
+                // For pencil, show normal drawing
+                this.ctx.strokeStyle = this.selectedColor;
+                this.ctx.lineWidth = this.strokeWidth;
+                this.drawSmoothPath(this.currentPath);
+              }
             }
           }
         }

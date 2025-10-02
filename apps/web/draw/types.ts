@@ -29,6 +29,15 @@ export type Shape =
       path?: { x: number; y: number }[]; // For smooth drawing
     }
   | {
+      type: "eraser";
+      startX: number;
+      startY: number;
+      endX: number;
+      endY: number;
+      strokeWidth?: number;
+      path?: { x: number; y: number }[]; // For smooth erasing
+    }
+  | {
       type: "text";
       x: number;
       y: number;

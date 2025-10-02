@@ -33,6 +33,28 @@ export class CanvasRenderer {
     // Type guard for shapes with strokeWidth
     if (shape.type === "text") return;
 
+    // Handle eraser differently
+    if (shape.type === "eraser") {
+      this.ctx.save();
+      this.ctx.globalCompositeOperation = "destination-out";
+      this.ctx.lineWidth = shape.strokeWidth || 2; // Use actual stroke width
+      this.ctx.lineCap = "round";
+      this.ctx.lineJoin = "round";
+
+      if (shape.path && shape.path.length > 1) {
+        this.renderSmoothPath(shape.path);
+      } else {
+        // Fallback for legacy straight lines
+        this.ctx.beginPath();
+        this.ctx.moveTo(shape.startX, shape.startY);
+        this.ctx.lineTo(shape.endX, shape.endY);
+        this.ctx.stroke();
+        this.ctx.closePath();
+      }
+      this.ctx.restore();
+      return;
+    }
+
     this.ctx.strokeStyle = shape.color || "rgba(255, 255, 255)";
     this.ctx.lineWidth = shape.strokeWidth || 2;
 
@@ -72,6 +94,8 @@ export class CanvasRenderer {
   private renderSmoothPath(path: { x: number; y: number }[]) {
     if (path.length < 2) return;
 
+    this.ctx.lineCap = "round";
+    this.ctx.lineJoin = "round";
     this.ctx.beginPath();
     this.ctx.moveTo(path[0].x, path[0].y);
 
