@@ -56,7 +56,7 @@ export class SVGExporter {
       return null;
     }
 
-    const color = shape.color || "#ffffff";
+    const color = ('color' in shape && shape.color) ? shape.color : "#000000";
 
     switch (shape.type) {
       case "rect":
