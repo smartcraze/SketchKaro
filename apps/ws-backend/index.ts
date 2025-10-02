@@ -1,13 +1,14 @@
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/backend-common";
-import db from "@repo/db"; 
+import db from "@repo/db";
 import type { WebSocket } from "bun";
-
 
 interface User {
   ws: WebSocket;
   rooms: string[];
   userId: string;
+  color?: string;
+  name?: string;
 }
 
 const users = new Map<WebSocket, User>();
@@ -23,7 +24,7 @@ function checkToken(token: string): string | null {
 }
 
 const server = Bun.serve({
-  port: 8080,  
+  port: 8080,
   fetch(req, server) {
     const url = new URL(req.url);
     const token = url.searchParams.get("token");
@@ -109,12 +110,44 @@ const server = Bun.serve({
 
           for (const [client, u] of users.entries()) {
             if (u.rooms.includes(parsedData.roomId)) {
-              client.send(JSON.stringify({
-                type: "chat",
-                roomId: parsedData.roomId,
-                message: parsedData.message,
-                from: user.userId,
-              }));
+              client.send(
+                JSON.stringify({
+                  type: "chat",
+                  roomId: parsedData.roomId,
+                  message: parsedData.message,
+                  from: user.userId,
+                })
+              );
+            }
+          }
+          break;
+
+        case "cursor":
+          if (
+            !parsedData.roomId ||
+            parsedData.x === undefined ||
+            parsedData.y === undefined
+          )
+            return;
+          if (!user.rooms.includes(parsedData.roomId)) return;
+
+          // Broadcast cursor position to other users in the room
+          for (const [client, u] of users.entries()) {
+            if (
+              u.rooms.includes(parsedData.roomId) &&
+              u.userId !== user.userId
+            ) {
+              client.send(
+                JSON.stringify({
+                  type: "cursor",
+                  userId: user.userId,
+                  x: parsedData.x,
+                  y: parsedData.y,
+                  color: user.color || "#ffffff",
+                  name: user.name || `User ${user.userId.slice(-4)}`,
+                  roomId: parsedData.roomId,
+                })
+              );
             }
           }
           break;
@@ -134,4 +167,6 @@ const server = Bun.serve({
   },
 });
 
-console.log(`🔥 WebSocket server running at ws://${server.hostname}:${server.port}`);
+console.log(
+  `🔥 WebSocket server running at ws://${server.hostname}:${server.port}`
+);
