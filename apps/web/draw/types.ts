@@ -1,4 +1,4 @@
-export type Tool = "circle" | "rect" | "pencil" | "eraser" | "text";
+export type Tool = "circle" | "rect" | "pencil" | "eraser" | "text" | "pan";
 
 export type Shape =
   | {
@@ -64,4 +64,12 @@ export interface HistoryState {
   shapes: Shape[];
   currentIndex: number;
   maxSize: number;
+}
+
+export interface Viewport {
+  x: number;
+  y: number;
+  scale: number;
+  width: number;
+  height: number;
 }

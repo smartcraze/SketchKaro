@@ -16,6 +16,7 @@ import {
   ZoomIn,
   ZoomOut,
   RotateCcw,
+  Hand,
 } from "lucide-react";
 import { Game } from "@/draw/Games";
 import { Tool } from "@/draw/types";
@@ -34,7 +35,7 @@ export function Canvas({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [game, setGame] = useState<Game>();
-  const [selectedTool, setSelectedTool] = useState<Tool>("circle");
+  const [selectedTool, setSelectedTool] = useState<Tool>("pan");
   const [selectedColor, setSelectedColor] = useState<DrawingColor>("#ffffff");
   const [strokeWidth, setStrokeWidth] = useState<number>(2);
   const [canUndo, setCanUndo] = useState<boolean>(false);
@@ -165,6 +166,27 @@ export function Canvas({
           e.preventDefault();
           handleExport();
         }
+      } else {
+        // Tool shortcuts
+        if (e.key === "p") {
+          e.preventDefault();
+          setSelectedTool("pan");
+        } else if (e.key === "d") {
+          e.preventDefault();
+          setSelectedTool("pencil");
+        } else if (e.key === "r") {
+          e.preventDefault();
+          setSelectedTool("rect");
+        } else if (e.key === "c") {
+          e.preventDefault();
+          setSelectedTool("circle");
+        } else if (e.key === "e") {
+          e.preventDefault();
+          setSelectedTool("eraser");
+        } else if (e.key === "t") {
+          e.preventDefault();
+          setSelectedTool("text");
+        }
       }
     };
 
@@ -192,6 +214,26 @@ export function Canvas({
   return (
     <div className="relative w-screen h-screen overflow-hidden">
       <canvas ref={canvasRef}></canvas>
+
+      {/* Infinite Canvas Info Panel */}
+      <div className="fixed bottom-4 left-4 z-10 bg-background/90 border rounded-xl p-3 shadow-md max-w-xs">
+        <div className="text-xs text-muted-foreground space-y-1">
+          <div className="font-medium text-foreground mb-1">
+            Infinite Canvas Controls:
+          </div>
+          <div>
+            • Pan: Middle click & drag, right-click & drag, or use Pan tool
+          </div>
+          <div>• Zoom: Mouse wheel</div>
+          <div>• Mobile: Two-finger pinch to zoom, two-finger drag to pan</div>
+          <div className="pt-1 border-t border-border">
+            <div className="font-medium text-foreground">Shortcuts:</div>
+            <div>
+              P - Pan, D - Draw, R - Rectangle, C - Circle, E - Eraser, T - Text
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* User Cursors Overlay */}
       {Array.from(userCursors.entries()).map(([userId, cursor]) => {
@@ -357,6 +399,9 @@ function Topbar({
           }}
           className="bg-muted border rounded-xl p-1 flex gap-1 md:gap-2 shadow-md min-w-fit"
         >
+          <ToggleGroupItem value="pan" aria-label="Pan">
+            <Hand className="h-5 w-5" />
+          </ToggleGroupItem>
           <ToggleGroupItem value="pencil" aria-label="Pencil">
             <Pencil className="h-5 w-5" />
           </ToggleGroupItem>

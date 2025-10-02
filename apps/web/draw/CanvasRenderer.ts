@@ -1,4 +1,4 @@
-import { Shape } from "./types";
+import { Shape, Viewport } from "./types";
 
 export class CanvasRenderer {
   private ctx: CanvasRenderingContext2D;
@@ -12,6 +12,57 @@ export class CanvasRenderer {
   clear() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     // Don't fill with black - leave transparent for proper export functionality
+  }
+
+  // Draw an infinite grid background to show the infinite nature of the canvas
+  drawGrid(viewport: Viewport) {
+    const { scale, x: offsetX, y: offsetY } = viewport;
+    const gridSize = 50; // Base grid size
+    const scaledGridSize = gridSize * scale;
+
+    // Only draw grid if it's visible and not too small/large
+    if (scaledGridSize < 10 || scaledGridSize > 100) return;
+
+    this.ctx.save();
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform for grid
+    this.ctx.strokeStyle = "rgba(100, 100, 100, 0.2)";
+    this.ctx.lineWidth = 0.5;
+
+    // Calculate grid offset - fix the modulo calculation
+    const startX =
+      Math.floor(-offsetX / scaledGridSize) * scaledGridSize + offsetX;
+    const startY =
+      Math.floor(-offsetY / scaledGridSize) * scaledGridSize + offsetY;
+
+    // Draw vertical lines - limit the number of lines
+    for (
+      let x = startX;
+      x < this.canvas.width + scaledGridSize;
+      x += scaledGridSize
+    ) {
+      if (x >= -scaledGridSize && x <= this.canvas.width + scaledGridSize) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(Math.round(x), 0);
+        this.ctx.lineTo(Math.round(x), this.canvas.height);
+        this.ctx.stroke();
+      }
+    }
+
+    // Draw horizontal lines - limit the number of lines
+    for (
+      let y = startY;
+      y < this.canvas.height + scaledGridSize;
+      y += scaledGridSize
+    ) {
+      if (y >= -scaledGridSize && y <= this.canvas.height + scaledGridSize) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(0, Math.round(y));
+        this.ctx.lineTo(this.canvas.width, Math.round(y));
+        this.ctx.stroke();
+      }
+    }
+
+    this.ctx.restore();
   }
 
   renderShape(shape: Shape) {
@@ -118,9 +169,33 @@ export class CanvasRenderer {
     this.ctx.stroke();
   }
 
-  renderAll(shapes: Shape[]) {
-    this.clear();
+  renderAll(shapes: Shape[], viewport?: Viewport) {
+    // Clear the entire canvas first
+    this.ctx.save();
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Temporarily disable grid to fix visual issues
+    // if (viewport) {
+    //   this.drawGrid(viewport);
+    // }
+
+    // Apply viewport transform for rendering shapes
+    if (viewport) {
+      this.ctx.setTransform(
+        viewport.scale,
+        0,
+        0,
+        viewport.scale,
+        viewport.x,
+        viewport.y
+      );
+    }
+
+    // Render all shapes with the transform applied
     shapes.forEach((shape) => this.renderShape(shape));
+
+    this.ctx.restore();
   }
 
   // Special render method for export that ignores any transforms
