@@ -13,7 +13,7 @@ import { ExportButtons } from "./Toolbar/ExportButtons";
 import { ZoomControls } from "./Toolbar/ZoomControls";
 import { MobileControls } from "./Toolbar/MobileControls";
 import { WelcomeOverlay } from "./WelcomeOverlay";
-import { CursorOverlay } from "./CursorOverlay";
+// CursorOverlay removed for simplicity
 
 // Import custom hooks
 import { useMobileDetection } from "@/hooks/useMobileDetection";
@@ -102,11 +102,7 @@ export function Canvas({
     y: number;
   } | null>(null);
 
-  // Cursor tracking
-  const [userCursors, setUserCursors] = useState<
-    Map<string, { x: number; y: number; color: string; name: string }>
-  >(new Map());
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // Cursor tracking removed for simplicity
 
   // Mobile detection
   const isMobile = useMobileDetection();
@@ -225,8 +221,7 @@ export function Canvas({
       {/* Welcome Overlay */}
       <WelcomeOverlay />
 
-      {/* Cursor Overlay */}
-      <CursorOverlay userCursors={userCursors} currentUserId={currentUserId} />
+      {/* Cursor Overlay removed for simplicity */}
 
       {/* Color Panel - Left Side */}
       <ColorPanel

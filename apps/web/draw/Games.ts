@@ -1,4 +1,4 @@
-import { Tool, Shape, DrawingState, CursorPosition, Viewport } from "./types";
+import { Tool, Shape, DrawingState, Viewport } from "./types";
 import { CanvasRenderer } from "./CanvasRenderer";
 import { ShapeManager } from "./ShapeManager";
 import { getExistingShapes } from "@/draw/http";
@@ -32,15 +32,8 @@ export class Game {
   private panStartPoint = { x: 0, y: 0 };
   private panButton = 1; // Middle mouse button for panning
 
-  // Cursor tracking
-  private userCursors = new Map<string, CursorPosition>();
+  // Cursor tracking removed for simplicity
   private currentUserId: string | null = null;
-  public onCursorUpdate?: (
-    cursors: Map<string, CursorPosition>,
-    userId: string | null
-  ) => void;
-  private lastCursorSend = 0;
-  private cursorSendThrottle = 50; // ms
 
   // Touch and zoom support - Legacy properties (keeping for compatibility)
   private scale = 1;
@@ -328,21 +321,7 @@ export class Game {
       if (data.type === "chat") {
         const parsedMessage = JSON.parse(data.message);
 
-        if (parsedMessage.type === "cursor") {
-          const { userId, x, y, color, name } = parsedMessage;
-          if (userId && userId !== this.currentUserId) {
-            this.userCursors.set(userId, {
-              x,
-              y,
-              color: color || "#ffffff",
-              name: name || `User ${userId.slice(-4)}`,
-            });
-            if (this.onCursorUpdate) {
-              this.onCursorUpdate(this.userCursors, this.currentUserId);
-            }
-          }
-          return;
-        }
+        // Cursor tracking removed for simplicity
 
         if (parsedMessage.type === "user_joined") {
           this.currentUserId = parsedMessage.userId;
@@ -575,22 +554,7 @@ export class Game {
     const currentX = canvasPoint.x;
     const currentY = canvasPoint.y;
 
-    // Handle cursor tracking
-    const now = Date.now();
-    if (now - this.lastCursorSend > this.cursorSendThrottle) {
-      this.lastCursorSend = now;
-      this.socket.send(
-        JSON.stringify({
-          type: "cursor",
-          roomId: this.roomId,
-          x: screenX,
-          y: screenY,
-          userId: this.currentUserId,
-          color: this.selectedColor,
-          name: `User ${this.currentUserId?.slice(-4) || "Unknown"}`,
-        })
-      );
-    }
+    // Cursor tracking removed for simplicity
 
     if (this.clicked) {
       if (

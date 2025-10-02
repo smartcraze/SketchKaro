@@ -53,12 +53,7 @@ export interface DrawingState {
   fontSize: number;
 }
 
-export interface CursorPosition {
-  x: number;
-  y: number;
-  color: string;
-  name: string;
-}
+// CursorPosition interface removed - cursor tracking disabled
 
 export interface HistoryState {
   shapes: Shape[];

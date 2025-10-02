@@ -154,33 +154,9 @@ const server = Bun.serve({
           );
           break;
 
+        // Cursor tracking removed for simplicity
         case "cursor":
-          if (
-            !parsedData.roomId ||
-            parsedData.x === undefined ||
-            parsedData.y === undefined
-          )
-            return;
-          if (!user.rooms.includes(parsedData.roomId)) return;
-
-          for (const [client, u] of users.entries()) {
-            if (
-              u.rooms.includes(parsedData.roomId) &&
-              u.userId !== user.userId
-            ) {
-              client.send(
-                JSON.stringify({
-                  type: "cursor",
-                  userId: user.userId,
-                  x: parsedData.x,
-                  y: parsedData.y,
-                  color: user.color || "#ffffff",
-                  name: user.name || `User ${user.userId.slice(-4)}`,
-                  roomId: parsedData.roomId,
-                })
-              );
-            }
-          }
+          // Feature disabled
           break;
 
         case "clear_all":
