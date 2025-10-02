@@ -26,6 +26,31 @@ app.post("/room", authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
+app.get("/me", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+    const user = await db.user.findUnique({ 
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        // Don't return password for security
+      }
+    });
+    
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+    
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Failed to get user info:", error);
+    res.status(400).json({ message: "Failed to get user info" });
+  }
+});
+
 app.get("/room/:roomId/chat", authMiddleware, async (req: Request, res: Response) => {
   try {
     const { roomId } = req.params;
@@ -77,13 +102,17 @@ app.get("/room/:roomId", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/room/:slug", authMiddleware, async (req: Request, res: Response) => {
+app.get("/room/find/:slug", authMiddleware, async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
     const room = await db.room.findUnique({ where: { slug } });
+    if (!room) {
+      res.status(404).json({ message: "Room not found" });
+      return;
+    }
     res.status(200).json(room);
   } catch (error) {
-    res.status(400).json({ message: "Failed to get the room Id" });
+    res.status(400).json({ message: "Failed to get the room" });
   }
 });
 

@@ -30,12 +30,9 @@ const server = Bun.serve({
     const url = new URL(req.url);
     const token = url.searchParams.get("token");
 
-    if (!token) {
-      return new Response("Missing token", { status: 401 });
-    }
-
+    // Allow connections without token for demo purposes
     const upgraded = server.upgrade(req, {
-      data: { token },
+      data: { token: token || null },
     });
 
     if (!upgraded) {
@@ -45,15 +42,24 @@ const server = Bun.serve({
 
   websocket: {
     async open(ws) {
-      const { token } = ws.data as { token: string };
+      const { token } = ws.data as { token: string | null };
 
-      const userId = checkToken(token);
-      if (!userId) {
-        ws.close(1008, "Invalid or missing token");
-        return;
+      let userId: string | null = null;
+      let name: string = "Anonymous";
+
+      if (token) {
+        userId = checkToken(token);
+        if (!userId) {
+          ws.close(1008, "Invalid token");
+          return;
+        }
+        name = await getNameFromUserId(userId);
+      } else {
+        // For demo mode, generate a temporary user ID
+        userId = `demo-user-${Math.random().toString(36).substr(2, 9)}`;
+        name = `Demo User ${userId.slice(-4)}`;
+        console.log(`🎭 Demo user connected: ${userId}`);
       }
-      
-      const name = await getNameFromUserId(userId as string);
 
       users.set(ws as unknown as WebSocket, {
         ws: ws as unknown as WebSocket,
@@ -134,13 +140,23 @@ const server = Bun.serve({
           if (!parsedData.roomId || !parsedData.message) return;
           if (!user.rooms.includes(parsedData.roomId)) return;
 
-          await db.chatMessage.create({
-            data: {
-              roomId: Number(parsedData.roomId),
-              message: parsedData.message,
-              userId: user.userId,
-            },
-          });
+          // Only save to database for non-demo rooms
+          const isDemo = parsedData.roomId.startsWith('demo-');
+          
+          if (!isDemo && !user.userId.startsWith('demo-user-')) {
+            try {
+              await db.chatMessage.create({
+                data: {
+                  roomId: Number(parsedData.roomId),
+                  message: parsedData.message,
+                  userId: user.userId,
+                },
+              });
+            } catch (error) {
+              console.error("Error saving chat message to database:", error);
+              // Continue anyway - don't break real-time chat for database errors
+            }
+          }
 
           server.publish(
             parsedData.roomId,

@@ -69,6 +69,13 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
     const loadChatHistory = async () => {
       if (!roomId) return;
       
+      // Skip loading chat history for demo rooms
+      if (roomId.startsWith('demo-')) {
+        console.log('Demo room detected, skipping chat history load');
+        setIsLoading(false);
+        return;
+      }
+      
       try {
         setIsLoading(true);
         const token = document.cookie
@@ -77,7 +84,7 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
           ?.split('=')[1];
 
         if (!token) {
-          console.error('No token found for chat history');
+          console.log('No token found, skipping chat history load');
           setIsLoading(false);
           return;
         }
@@ -96,11 +103,23 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
             timestamp: new Date(msg.timestamp),
           }));
           setMessages(formattedHistory);
+          console.log(`Loaded ${formattedHistory.length} chat messages for room ${roomId}`);
+        } else if (response.status === 404) {
+          // Room doesn't exist yet, that's okay
+          console.log('Room not found, starting with empty chat history');
+          setMessages([]);
+        } else if (response.status === 400) {
+          // Bad request, possibly invalid room ID
+          console.log('Invalid room ID, starting with empty chat history');
+          setMessages([]);
         } else {
-          console.error('Failed to load chat history:', response.statusText);
+          console.warn('Failed to load chat history:', response.status, response.statusText);
+          setMessages([]);
         }
       } catch (error) {
-        console.error('Error loading chat history:', error);
+        console.warn('Error loading chat history:', error);
+        // Don't fail the entire chat component, just start with empty history
+        setMessages([]);
       } finally {
         setIsLoading(false);
       }
