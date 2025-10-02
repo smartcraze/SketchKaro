@@ -165,6 +165,15 @@ export function Canvas({
         } else if (e.key === "s") {
           e.preventDefault();
           handleExport();
+        } else if (e.key === "=") {
+          e.preventDefault();
+          handleZoomIn();
+        } else if (e.key === "-") {
+          e.preventDefault();
+          handleZoomOut();
+        } else if (e.key === "0") {
+          e.preventDefault();
+          handleResetZoom();
         }
       } else {
         // Tool shortcuts
@@ -231,6 +240,7 @@ export function Canvas({
             <div>
               P - Pan, D - Draw, R - Rectangle, C - Circle, E - Eraser, T - Text
             </div>
+            <div>Ctrl+= Zoom In, Ctrl+- Zoom Out, Ctrl+0 Reset Zoom</div>
           </div>
         </div>
       </div>
@@ -272,6 +282,9 @@ export function Canvas({
         onRedo={handleRedo}
         onClear={handleClearCanvas}
         onExport={handleExport}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onResetZoom={handleResetZoom}
         canUndo={canUndo}
         canRedo={canRedo}
       />
@@ -282,8 +295,14 @@ export function Canvas({
           {/* Mobile Toggle Button */}
           <Button
             onClick={toggleMobileControls}
-            className="fixed bottom-4 right-4 z-20 p-3 rounded-full shadow-lg"
+            className="fixed bottom-[1rem] right-[1rem] z-20 p-3 rounded-full shadow-lg"
             aria-label="Toggle Mobile Controls"
+            style={{
+              position: "fixed",
+              bottom: "1rem",
+              right: "1rem",
+              transform: "none",
+            }}
           >
             <ChevronDown
               className={`h-5 w-5 transition-transform ${showMobileControls ? "rotate-180" : ""}`}
@@ -292,7 +311,15 @@ export function Canvas({
 
           {/* Mobile Controls Panel */}
           {showMobileControls && (
-            <div className="fixed bottom-16 right-4 z-10 bg-background border rounded-xl p-3 shadow-lg">
+            <div
+              className="fixed bg-background border rounded-xl p-3 shadow-lg z-10"
+              style={{
+                position: "fixed",
+                bottom: "4.5rem",
+                right: "1rem",
+                transform: "none",
+              }}
+            >
               <div className="flex flex-col gap-2">
                 {/* Zoom Controls */}
                 <div className="flex items-center gap-2">
@@ -341,6 +368,9 @@ function Topbar({
   onRedo,
   onClear,
   onExport,
+  onZoomIn,
+  onZoomOut,
+  onResetZoom,
   canUndo,
   canRedo,
 }: {
@@ -354,6 +384,9 @@ function Topbar({
   onRedo: () => void;
   onClear: () => void;
   onExport: () => void;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onResetZoom: () => void;
   canUndo: boolean;
   canRedo: boolean;
 }) {
@@ -498,8 +531,38 @@ function Topbar({
         </Button>
       </div>
 
-      {/* Top-Right Export and Share Buttons */}
+      {/* Top-Right Export, Share and Zoom Buttons */}
       <div className="fixed top-4 right-4 z-10 flex gap-1 md:gap-2">
+        {/* Desktop Zoom Controls */}
+        <div className="hidden md:flex gap-1">
+          <Button
+            onClick={onZoomOut}
+            className="bg-muted border shadow-md p-1.5 md:p-2 rounded-xl hover:bg-accent transition"
+            aria-label="Zoom Out"
+            variant="outline"
+            size="sm"
+          >
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={onResetZoom}
+            className="bg-muted border shadow-md p-1.5 md:p-2 rounded-xl hover:bg-accent transition"
+            aria-label="Reset Zoom"
+            variant="outline"
+            size="sm"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+          <Button
+            onClick={onZoomIn}
+            className="bg-muted border shadow-md p-1.5 md:p-2 rounded-xl hover:bg-accent transition"
+            aria-label="Zoom In"
+            variant="outline"
+            size="sm"
+          >
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+        </div>
         <Button
           onClick={onExport}
           className="bg-muted border shadow-md p-1.5 md:p-2 rounded-xl hover:bg-accent transition"
