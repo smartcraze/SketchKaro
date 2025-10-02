@@ -2,13 +2,14 @@ import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "@repo/backend-common";
 import db from "@repo/db";
 import type { WebSocket } from "bun";
+import { getNameFromUserId } from "./chatmessage";
 
 interface User {
   ws: WebSocket;
   rooms: string[];
   userId: string;
   color?: string;
-  name?: string;
+  name: string;
 }
 
 const users = new Map<WebSocket, User>();
@@ -43,7 +44,7 @@ const server = Bun.serve({
   },
 
   websocket: {
-    open(ws) {
+    async open(ws) {
       const { token } = ws.data as { token: string };
 
       const userId = checkToken(token);
@@ -51,14 +52,19 @@ const server = Bun.serve({
         ws.close(1008, "Invalid or missing token");
         return;
       }
+      
+      const name = await getNameFromUserId(userId as string);
+
       users.set(ws as unknown as WebSocket, {
         ws: ws as unknown as WebSocket,
         rooms: [],
         userId,
+        name
       });
 
       // Attach userId to data for message handling
       (ws.data as any).userId = userId;
+      (ws.data as any).name = name;
 
       console.log(`✅ WebSocket connected: ${userId}`);
     },
@@ -89,6 +95,8 @@ const server = Bun.serve({
             user.rooms.push(parsedData.roomId);
             console.log(`${user.userId} joined room ${parsedData.roomId}`);
           }
+          ws.subscribe(parsedData.roomId);
+          
           break;
 
         case "leave_room":
@@ -121,6 +129,30 @@ const server = Bun.serve({
             }
           }
           break;
+        
+        case "chat_message":
+          if (!parsedData.roomId || !parsedData.message) return;
+          if (!user.rooms.includes(parsedData.roomId)) return;
+
+          await db.chatMessage.create({
+            data: {
+              roomId: Number(parsedData.roomId),
+              message: parsedData.message,
+              userId: user.userId,
+            },
+          });
+
+          server.publish(
+            parsedData.roomId,
+            JSON.stringify({
+              type: "chat_message",
+              roomId: parsedData.roomId,
+              message: parsedData.message,
+              from: user.userId,
+              name: user.name,
+            })
+          );
+          break;
 
         case "cursor":
           if (
@@ -131,7 +163,6 @@ const server = Bun.serve({
             return;
           if (!user.rooms.includes(parsedData.roomId)) return;
 
-          // Broadcast cursor position to other users in the room
           for (const [client, u] of users.entries()) {
             if (
               u.rooms.includes(parsedData.roomId) &&
@@ -157,7 +188,6 @@ const server = Bun.serve({
           if (!user.rooms.includes(parsedData.roomId)) return;
 
           try {
-            // Delete all chat messages for this room (which contain the drawing data)
             await db.drawing.deleteMany({
               where: {
                 roomId: Number(parsedData.roomId),
@@ -168,7 +198,6 @@ const server = Bun.serve({
               `🧹 Cleared all drawings for room ${parsedData.roomId} by user ${user.userId}`
             );
 
-            // Broadcast clear_all event to all users in the room
             for (const [client, u] of users.entries()) {
               if (u.rooms.includes(parsedData.roomId)) {
                 client.send(
