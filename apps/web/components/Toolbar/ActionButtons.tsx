@@ -17,13 +17,13 @@ export function ActionButtons({
   canRedo,
 }: ActionButtonsProps) {
   return (
-    <div className="fixed top-4 left-4 z-10 flex gap-1 md:gap-2">
+    <div className="flex gap-1 md:gap-2 bg-background/95 backdrop-blur-sm border border-border/50 rounded-2xl p-2 shadow-lg">
       <Button
         onClick={onUndo}
         disabled={!canUndo}
-        className="bg-muted border shadow-md p-1.5 md:p-2 rounded-xl hover:bg-accent transition disabled:opacity-50"
+        className="h-10 w-10 p-0 rounded-xl hover:bg-accent transition-colors disabled:opacity-50"
         aria-label="Undo (Ctrl+Z)"
-        variant="outline"
+        variant="ghost"
         size="sm"
       >
         <Undo className="h-4 w-4" />
@@ -31,18 +31,18 @@ export function ActionButtons({
       <Button
         onClick={onRedo}
         disabled={!canRedo}
-        className="bg-muted border shadow-md p-1.5 md:p-2 rounded-xl hover:bg-accent transition disabled:opacity-50"
+        className="h-10 w-10 p-0 rounded-xl hover:bg-accent transition-colors disabled:opacity-50"
         aria-label="Redo (Ctrl+Y)"
-        variant="outline"
+        variant="ghost"
         size="sm"
       >
         <Redo className="h-4 w-4" />
       </Button>
       <Button
         onClick={onClear}
-        className="bg-destructive border shadow-md p-1.5 md:p-2 rounded-xl hover:bg-destructive/90 transition text-destructive-foreground"
+        className="h-10 w-10 p-0 rounded-xl hover:bg-destructive/10 transition-colors text-destructive"
         aria-label="Clear Canvas (Ctrl+K)"
-        variant="outline"
+        variant="ghost"
         size="sm"
       >
         <Trash2 className="h-4 w-4" />

@@ -1,13 +1,11 @@
 import { Tool } from "@/draw/types";
 import { ToolSelector } from "./ToolSelector";
-import { ColorPicker } from "./ColorPicker";
 import { StrokeWidthSlider } from "./StrokeWidthSlider";
 
 interface ToolbarProps {
   selectedTool: Tool;
   setSelectedTool: (tool: Tool) => void;
   selectedColor: string;
-  setSelectedColor: (color: string) => void;
   strokeWidth: number;
   setStrokeWidth: (width: number) => void;
 }
@@ -16,7 +14,6 @@ export function Toolbar({
   selectedTool,
   setSelectedTool,
   selectedColor,
-  setSelectedColor,
   strokeWidth,
   setStrokeWidth,
 }: ToolbarProps) {
@@ -27,15 +24,6 @@ export function Toolbar({
         <ToolSelector
           selectedTool={selectedTool}
           setSelectedTool={setSelectedTool}
-        />
-
-        {/* Separator */}
-        <div className="w-px h-6 bg-border hidden sm:block"></div>
-
-        {/* Color Picker Section */}
-        <ColorPicker
-          selectedColor={selectedColor}
-          setSelectedColor={setSelectedColor}
         />
 
         {/* Separator */}

@@ -7,10 +7,12 @@ import toast from "react-hot-toast";
 
 // Import custom components
 import { Toolbar } from "./Toolbar/Toolbar";
+import { ColorPanel } from "./Toolbar/ColorPanel";
 import { ActionButtons } from "./Toolbar/ActionButtons";
+import { ExportButtons } from "./Toolbar/ExportButtons";
 import { ZoomControls } from "./Toolbar/ZoomControls";
 import { MobileControls } from "./Toolbar/MobileControls";
-import { InfoPanel } from "./InfoPanel";
+import { WelcomeOverlay } from "./WelcomeOverlay";
 import { CursorOverlay } from "./CursorOverlay";
 
 // Import custom hooks
@@ -220,37 +222,48 @@ export function Canvas({
 
       <canvas ref={canvasRef}></canvas>
 
-      {/* Info Panel */}
-      <InfoPanel />
+      {/* Welcome Overlay */}
+      <WelcomeOverlay />
 
       {/* Cursor Overlay */}
       <CursorOverlay userCursors={userCursors} currentUserId={currentUserId} />
 
-      {/* Main Toolbar */}
+      {/* Color Panel - Left Side */}
+      <ColorPanel
+        selectedColor={selectedColor}
+        setSelectedColor={setSelectedColor}
+      />
+
+      {/* Main Toolbar - Center Top */}
       <Toolbar
         selectedTool={selectedTool}
         setSelectedTool={setSelectedTool}
         selectedColor={selectedColor}
-        setSelectedColor={setSelectedColor}
         strokeWidth={strokeWidth}
         setStrokeWidth={setStrokeWidth}
       />
 
-      {/* Action Buttons (Undo/Redo/Clear) */}
-      <ActionButtons
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        onClear={handleClearCanvas}
-        canUndo={canUndo}
-        canRedo={canRedo}
-      />
+      {/* Action Buttons (Undo/Redo/Clear) - Top Left */}
+      <div className="fixed top-6 left-6 z-10">
+        <ActionButtons
+          onUndo={handleUndo}
+          onRedo={handleRedo}
+          onClear={handleClearCanvas}
+          canUndo={canUndo}
+          canRedo={canRedo}
+        />
+      </div>
 
-      {/* Zoom Controls and Export/Share */}
+      {/* Export Buttons (Download/Share) - Top Right */}
+      <div className="fixed top-6 right-6 z-10">
+        <ExportButtons onExport={handleExport} />
+      </div>
+
+      {/* Zoom Controls - Bottom Left (Horizontal) */}
       <ZoomControls
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         onResetZoom={handleResetZoom}
-        onExport={handleExport}
       />
 
       {/* Mobile Controls */}

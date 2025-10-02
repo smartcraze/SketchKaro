@@ -1,85 +1,48 @@
 import { Button } from "@/components/ui/button";
-import { Download, Share2, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
-import toast from "react-hot-toast";
+import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 
 interface ZoomControlsProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onResetZoom: () => void;
-  onExport: () => void;
 }
 
 export function ZoomControls({
   onZoomIn,
   onZoomOut,
   onResetZoom,
-  onExport,
 }: ZoomControlsProps) {
-  const handleShare = () => {
-    if (typeof window === "undefined" || typeof navigator === "undefined") {
-      toast.error("Share is only available in the browser");
-      return;
-    }
-
-    const currentUrl = window.location.href;
-    navigator.clipboard
-      .writeText(currentUrl)
-      .then(() => {
-        toast.success(" Copied to clipboard! Share this with your friend!");
-      })
-      .catch(() => {
-        toast.error("Failed to copy to clipboard");
-      });
-  };
-
   return (
-    <div className="fixed top-4 right-4 z-10 flex gap-1 md:gap-2">
-      {/* Desktop Zoom Controls */}
-      <div className="hidden md:flex gap-1">
+    <div className="fixed bottom-4 left-4 z-10">
+      <div className="flex gap-2 bg-background/95 backdrop-blur-sm border border-border/50 rounded-2xl p-2 shadow-lg">
         <Button
           onClick={onZoomOut}
-          className="bg-muted border shadow-md p-1.5 md:p-2 rounded-xl hover:bg-accent transition"
+          className="h-10 w-10 p-0 rounded-xl hover:bg-accent transition-colors"
           aria-label="Zoom Out"
-          variant="outline"
+          variant="ghost"
           size="sm"
         >
-          <ZoomOut className="h-4 w-4" />
+          <ZoomOut className="h-5 w-5" />
         </Button>
         <Button
           onClick={onResetZoom}
-          className="bg-muted border shadow-md p-1.5 md:p-2 rounded-xl hover:bg-accent transition"
+          className="h-10 w-10 p-0 rounded-xl hover:bg-accent transition-colors"
           aria-label="Reset Zoom"
-          variant="outline"
+          variant="ghost"
           size="sm"
         >
-          <RotateCcw className="h-4 w-4" />
+          <RotateCcw className="h-5 w-5" />
         </Button>
         <Button
           onClick={onZoomIn}
-          className="bg-muted border shadow-md p-1.5 md:p-2 rounded-xl hover:bg-accent transition"
+          className="h-10 w-10 p-0 rounded-xl hover:bg-accent transition-colors"
           aria-label="Zoom In"
-          variant="outline"
+          variant="ghost"
           size="sm"
         >
-          <ZoomIn className="h-4 w-4" />
+          <ZoomIn className="h-5 w-5" />
         </Button>
       </div>
-      <Button
-        onClick={onExport}
-        className="bg-muted border shadow-md p-1.5 md:p-2 rounded-xl hover:bg-accent transition"
-        aria-label="Export as PNG (Ctrl+S)"
-        variant="outline"
-      >
-        <Download className="h-4 w-4" />
-      </Button>
-      <Button
-        onClick={handleShare}
-        className="bg-muted border shadow-md p-1.5 md:p-2 rounded-xl hover:bg-accent transition"
-        aria-label="Share"
-        variant="outline"
-      >
-        <Share2 className="h-4 w-4 md:h-5 md:w-5" />
-      </Button>
     </div>
   );
 }
