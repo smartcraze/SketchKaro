@@ -26,7 +26,12 @@ export default function SigninPage() {
     e.preventDefault();
     try {
       const response = await axios.post(`${HTTP_BACKEND}/user/login`, formData);
-      document.cookie = `token=${response.data.token}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;
+
+      // Check if we're in the browser environment before setting cookie
+      if (typeof window !== "undefined" && typeof document !== "undefined") {
+        document.cookie = `token=${response.data.token}; path=/; max-age=${60 * 60 * 24}; SameSite=Strict`;
+      }
+
       toast.success("Signed in successfully");
       router.push("/");
     } catch (error) {
@@ -45,8 +50,12 @@ export default function SigninPage() {
         <Card className="shadow-2xl border-border rounded-2xl">
           <CardContent className="p-8 space-y-6">
             <div className="text-center space-y-1">
-              <h1 className="text-3xl font-semibold text-foreground">Welcome Back 👋</h1>
-              <p className="text-sm text-muted-foreground">Sign in to continue to Sketch Karo</p>
+              <h1 className="text-3xl font-semibold text-foreground">
+                Welcome Back 👋
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Sign in to continue to Sketch Karo
+              </p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -79,7 +88,10 @@ export default function SigninPage() {
             </form>
             <p className="text-sm text-center text-muted-foreground">
               Don’t have an account?{" "}
-              <span className="text-primary underline cursor-pointer" onClick={() => router.push("/signup")}>
+              <span
+                className="text-primary underline cursor-pointer"
+                onClick={() => router.push("/signup")}
+              >
                 Sign up
               </span>
             </p>

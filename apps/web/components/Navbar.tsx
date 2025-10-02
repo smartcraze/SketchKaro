@@ -9,16 +9,21 @@ export default function Navbar() {
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("token="))
-      ?.split("=")[1];
-    setToken(token ?? null);
+    // Check if we're in the browser environment
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("token="))
+        ?.split("=")[1];
+      setToken(token ?? null);
+    }
   }, []);
 
   const handleLogout = () => {
-    document.cookie = "token=; path=/; max-age=0";
-    window.location.reload();
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      document.cookie = "token=; path=/; max-age=0";
+      window.location.reload();
+    }
   };
 
   return (

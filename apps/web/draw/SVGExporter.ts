@@ -8,6 +8,14 @@ export class SVGExporter {
   }
 
   export(shapes: Shape[]): string {
+    // Check if we're in the browser environment
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      console.warn(
+        "SVGExporter: document is not available. Cannot export SVG on server side."
+      );
+      return "";
+    }
+
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("width", this.canvas.width.toString());
     svg.setAttribute("height", this.canvas.height.toString());
@@ -40,6 +48,14 @@ export class SVGExporter {
   }
 
   private shapeToSVG(shape: Shape): SVGElement | null {
+    // Check if we're in the browser environment
+    if (typeof window === "undefined" || typeof document === "undefined") {
+      console.warn(
+        "SVGExporter: document is not available. Cannot create SVG elements on server side."
+      );
+      return null;
+    }
+
     const color = shape.color || "#ffffff";
 
     switch (shape.type) {

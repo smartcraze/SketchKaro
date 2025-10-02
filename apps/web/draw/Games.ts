@@ -196,8 +196,7 @@ export class Game {
   private sendClearToServer() {
     this.socket.send(
       JSON.stringify({
-        type: "chat",
-        message: JSON.stringify({ type: "clear_all" }),
+        type: "clear_all",
         roomId: this.roomId,
       })
     );
@@ -222,6 +221,15 @@ export class Game {
   private initHandlers() {
     this.socket.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
+
+      // Handle direct clear_all message from server
+      if (data.type === "clear_all") {
+        console.log("Received clear_all command from server");
+        this.shapeManager.clearAll();
+        this.clearCanvas();
+        return;
+      }
+
       if (data.type === "chat") {
         const parsedMessage = JSON.parse(data.message);
 

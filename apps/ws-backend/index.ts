@@ -152,6 +152,45 @@ const server = Bun.serve({
           }
           break;
 
+        case "clear_all":
+          if (!parsedData.roomId) return;
+          if (!user.rooms.includes(parsedData.roomId)) return;
+
+          try {
+            // Delete all chat messages for this room (which contain the drawing data)
+            await db.chat.deleteMany({
+              where: {
+                roomId: Number(parsedData.roomId),
+              },
+            });
+
+            console.log(
+              `🧹 Cleared all drawings for room ${parsedData.roomId} by user ${user.userId}`
+            );
+
+            // Broadcast clear_all event to all users in the room
+            for (const [client, u] of users.entries()) {
+              if (u.rooms.includes(parsedData.roomId)) {
+                client.send(
+                  JSON.stringify({
+                    type: "clear_all",
+                    roomId: parsedData.roomId,
+                    from: user.userId,
+                  })
+                );
+              }
+            }
+          } catch (error) {
+            console.error("Error clearing room data:", error);
+            ws.send(
+              JSON.stringify({
+                type: "error",
+                message: "Failed to clear canvas",
+              })
+            );
+          }
+          break;
+
         default:
           console.warn("Unknown message type:", parsedData.type);
       }

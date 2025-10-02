@@ -19,13 +19,16 @@ export function Hero() {
   const router = useRouter();
 
   useEffect(() => {
-    const cookieToken = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("token="))
-      ?.split("=")[1];
+    // Check if we're in the browser environment
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      const cookieToken = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("token="))
+        ?.split("=")[1];
 
-    setToken(cookieToken ?? null);
-    setIsLoggedIn(!!cookieToken);
+      setToken(cookieToken ?? null);
+      setIsLoggedIn(!!cookieToken);
+    }
   }, []);
 
   const handleJoinRoom = async () => {
@@ -168,7 +171,9 @@ export function Hero() {
               <div className="text-sm">Active Teams</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-1">50M+</div>
+              <div className="text-3xl font-bold text-purple-600 mb-1">
+                50M+
+              </div>
               <div className="text-sm">Drawings Created</div>
             </div>
             <div className="text-center">
@@ -188,7 +193,9 @@ export function Hero() {
                   <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
                   <div className="w-3 h-3 bg-green-400 rounded-full"></div>
                 </div>
-                <span className="text-sm text-muted-foreground">Untitled Canvas</span>
+                <span className="text-sm text-muted-foreground">
+                  Untitled Canvas
+                </span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="flex -space-x-2">
