@@ -1,12 +1,14 @@
 "use client";
 
 import { WS_URL } from "@/Config";
-import { useEffect, useRef, useState } from "react";
+import { useEffect,  useState } from "react";
 import { Canvas } from "./Canvas";
+import Chat from "./chat/chat";
 
 export function RoomCanvas({ roomId }: { roomId: string }) {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
 
   useEffect(() => {
     // Get token from cookies on client side
@@ -39,13 +41,23 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
     };
   }, [token, roomId]);
 
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+  };
+
   if (!socket) {
     return <div>Connecting to server....</div>;
   }
 
   return (
-    <div>
+    <div className="relative w-full h-full">
       <Canvas roomId={roomId} socket={socket} />
+      <Chat 
+        socket={socket} 
+        roomId={roomId} 
+        isOpen={isChatOpen} 
+        onToggle={toggleChat} 
+      />
     </div>
   );
 }

@@ -26,6 +26,17 @@ export function useKeyboardShortcuts({
     if (typeof window === "undefined") return;
 
     const handleKeyboard = (e: KeyboardEvent) => {
+      // Ignore keyboard shortcuts when user is typing in input fields
+      const target = e.target as HTMLElement;
+      const isInputField = target.tagName === 'INPUT' || 
+                          target.tagName === 'TEXTAREA' || 
+                          target.contentEditable === 'true' ||
+                          target.isContentEditable;
+      
+      if (isInputField) {
+        return; // Don't handle shortcuts when typing in input fields
+      }
+
       if (e.ctrlKey || e.metaKey) {
         if (e.key === "z" && !e.shiftKey) {
           e.preventDefault();

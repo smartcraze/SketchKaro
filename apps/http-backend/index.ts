@@ -26,6 +26,43 @@ app.post("/room", authMiddleware, async (req: Request, res: Response) => {
   }
 });
 
+app.get("/room/:roomId/chat", authMiddleware, async (req: Request, res: Response) => {
+  try {
+    const { roomId } = req.params;
+    const limit = parseInt(req.query.limit as string) || 50;
+    const offset = parseInt(req.query.offset as string) || 0;
+    
+    const chatMessages = await db.chatMessage.findMany({
+      where: { roomId: Number(roomId) },
+      include: {
+        user: {
+          select: {
+            name: true,
+            id: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+      skip: offset,
+      take: limit,
+    });
+    
+    const formattedMessages = chatMessages.map(msg => ({
+      id: msg.id.toString(),
+      message: msg.message,
+      from: msg.userId,
+      name: msg.user.name,
+      timestamp: msg.createdAt,
+      roomId: msg.roomId.toString(),
+    }));
+    
+    res.status(200).json(formattedMessages);
+  } catch (error) {
+    console.error("Failed to get chat messages:", error);
+    res.status(400).json({ message: "Failed to get chat messages" });
+  }
+});
+
 app.get("/room/:roomId", async (req: Request, res: Response) => {
   try {
     const { roomId } = req.params;
