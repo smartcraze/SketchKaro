@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "bun run --watch --hot --env-file=.env.local index.ts",
     "build": "bun build index.ts --outdir dist --target bun --minify --sourcemap",
-    "start": "bun run dist/index.js",
-    "postinstall": "prisma migrate && prisma generate"
+    "start": "bun run dist/index.js"
   },
   "devDependencies": {
     "@types/bun": "latest"
