@@ -11,9 +11,6 @@
     "studio": "prisma studio",
     "postinstall": "prisma generate"
   },
-  "prisma":{
-    "schema": "prisma/schema.prisma"
-  },
   "devDependencies": {
     "@types/bun": "latest"
   },
