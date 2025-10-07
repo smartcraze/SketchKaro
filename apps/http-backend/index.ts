@@ -15,6 +15,10 @@ app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "healthy", timestamp: new Date().toISOString() });
+});
+
 app.post("/room", authMiddleware, async (req: Request, res: Response) => {
   try {
     const { slug } = createRoomSchema.parse(req.body);

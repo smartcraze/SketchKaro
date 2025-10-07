@@ -28,6 +28,14 @@ const server = Bun.serve({
   port: 8080,
   fetch(req, server) {
     const url = new URL(req.url);
+    
+    // Health check endpoint
+    if (url.pathname === "/health") {
+      return new Response(JSON.stringify({ status: "healthy", timestamp: new Date().toISOString() }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    
     const token = url.searchParams.get("token");
 
     // Allow connections without token for demo purposes

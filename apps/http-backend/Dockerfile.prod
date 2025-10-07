@@ -1,0 +1,35 @@
+FROM oven/bun:latest
+
+# Install OpenSSL to fix Prisma warnings
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy root package files first for workspace
+COPY package.json bun.lock* ./
+COPY turbo.json ./
+
+# Copy workspace packages
+COPY packages/ ./packages/
+
+# Copy the http-backend app
+COPY apps/http-backend/ ./apps/http-backend/
+
+# Install dependencies without running postinstall scripts
+RUN bun install --ignore-scripts
+
+# Generate Prisma client manually
+WORKDIR /app/packages/db
+RUN bunx prisma generate
+
+# Change to http-backend directory and build
+WORKDIR /app/apps/http-backend
+RUN bun run build
+
+EXPOSE 3001
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3001/health || exit 1
+
+CMD ["bun", "run", "start"]
