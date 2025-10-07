@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { HTTP_BACKEND } from "@/Config";
+import { HTTP_BACKEND, WS_URL } from "@/Config";
 import axios from "axios";
 import {
   Play,
@@ -29,9 +29,6 @@ export function Hero() {
   const [activeTab, setActiveTab] = useState<"join" | "create" | "demo">(
     "create"
   );
-  const [backendStatus, setBackendStatus] = useState<
-    "checking" | "online" | "offline"
-  >("checking");
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const isDrawing = useRef(false);
   const router = useRouter();
@@ -49,21 +46,6 @@ export function Hero() {
     }
   }, []);
 
-  // Check backend connectivity
-  useEffect(() => {
-    const checkBackendStatus = async () => {
-      try {
-        const response = await axios.get(`${HTTP_BACKEND}/`, { timeout: 5000 });
-        setBackendStatus("online");
-      } catch (error) {
-        console.warn("Backend not reachable:", error);
-        setBackendStatus("offline");
-      }
-    };
-
-    checkBackendStatus();
-  }, []);
-
   const handleCreateRoom = async () => {
     if (!isLoggedIn) {
       toast.error("Please sign in to create a room");
@@ -77,9 +59,6 @@ export function Hero() {
     }
 
     try {
-      console.log("Creating room with slug:", slug.trim());
-      console.log("Backend URL:", HTTP_BACKEND);
-      console.log("Token:", token ? "Present" : "Missing");
 
       const response = await axios.post(
         `${HTTP_BACKEND}/room`,
@@ -96,7 +75,6 @@ export function Hero() {
       toast.success("Room created successfully!");
       router.push(`/canvas/${roomId}`);
     } catch (error: any) {
-      console.error("Failed to create room:", error);
 
       // More specific error handling
       if (error.code === "ECONNREFUSED" || error.code === "ERR_NETWORK") {
@@ -146,7 +124,6 @@ export function Hero() {
     }
 
     try {
-      console.log("Looking for room with slug:", slug.trim());
 
       // First, try to find the existing room
       const response = await axios.get(
@@ -167,7 +144,6 @@ export function Hero() {
         toast.error("Room not found. Please check the room code.");
       }
     } catch (error: any) {
-      console.error("Failed to join room:", error);
 
       if (error.code === "ECONNREFUSED" || error.code === "ERR_NETWORK") {
         toast.error(
@@ -379,12 +355,9 @@ export function Hero() {
                 onClick={handleCreateRoom}
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                 size="lg"
-                disabled={backendStatus === "offline"}
               >
                 <Plus className="w-5 h-5 mr-2" />
-                {backendStatus === "offline"
-                  ? "Backend Offline"
-                  : "Create New Room"}
+                Create New Room
               </Button>
             </div>
           )}
@@ -408,12 +381,9 @@ export function Hero() {
                 className="w-full"
                 size="lg"
                 variant="outline"
-                disabled={backendStatus === "offline"}
               >
                 <ArrowRight className="w-5 h-5 mr-2" />
-                {backendStatus === "offline"
-                  ? "Backend Offline"
-                  : "Join Existing Room"}
+                Join Existing Room
               </Button>
             </div>
           )}
@@ -468,31 +438,6 @@ export function Hero() {
             brainstorm, and chat with your team in real-time, anywhere in the
             world.
           </p>
-
-          {/* Enhanced Action Section with Backend Status */}
-          {backendStatus === "offline" && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg max-w-md mx-auto">
-              <div className="flex items-center justify-center gap-2 text-red-600 dark:text-red-400">
-                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                <span className="text-sm font-medium">
-                  Backend Services Offline
-                </span>
-              </div>
-              <p className="text-xs text-red-500 mt-1 text-center">
-                Please start the backend services to create rooms. Run:{" "}
-                <code className="bg-red-100 dark:bg-red-800 px-1 rounded">
-                  bun run dev
-                </code>
-              </p>
-            </div>
-          )}
-
-          {backendStatus === "online" && (
-            <div className="mb-2 flex items-center justify-center gap-2 text-green-600 dark:text-green-400">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs">Services Online</span>
-            </div>
-          )}
 
           {renderActionSection()}
 
