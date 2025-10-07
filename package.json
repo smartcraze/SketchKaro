@@ -1,13 +1,12 @@
 {
-  "name": "drawio",
+  "name": "sketchkaro",
   "private": true,
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types",
-    "postinstall": "prisma generate"
+    "check-types": "turbo run check-types"
   },
   "devDependencies": {
     "@emnapi/core": "^1.4.3",
