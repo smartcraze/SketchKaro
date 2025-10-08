@@ -5,8 +5,7 @@
 
 ## Architecture 
 
-<img width="2328" height="1072" alt="diagram-export-25-08-2025-22_38_17" src="https://github.com/user-attachments/assets/e1ce6e94-b352-4207-93c6-d9f06e896097" />
-
+<img width="1666" height="862" alt="image" src="https://github.com/user-attachments/assets/8060a893-a431-49a7-8a7d-681bf3d08cf2" />
 
 ## 🚀 Features
 
