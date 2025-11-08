@@ -122,7 +122,7 @@ const server = Bun.serve({
             user.rooms.push(parsedData.roomId);
             console.log(`${user.userId} joined room ${parsedData.roomId}`);
           }
-          ws.subscribe(parsedData.roomId);
+          (ws as any).subscribe(parsedData.roomId);
           break;
 
         case "leave_room":
@@ -140,29 +140,33 @@ const server = Bun.serve({
             return;
           }
 
-          try {
-            await db.drawing.create({
-              data: {
-                roomId: Number(parsedData.roomId),
-                message: parsedData.message,
-                userId: user.userId,
-              },
-            });
+          const isDemoRoomForDrawing = parsedData.roomId.startsWith('demo-');
 
-            for (const [client, u] of users.entries()) {
-              if (u.rooms.includes(parsedData.roomId)) {
-                client.send(
-                  JSON.stringify({
-                    type: "chat",
-                    roomId: parsedData.roomId,
-                    message: parsedData.message,
-                    from: user.userId,
-                  })
-                );
-              }
+          if (!isDemoRoomForDrawing) {
+            try {
+              await db.drawing.create({
+                data: {
+                  roomId: Number(parsedData.roomId),
+                  message: parsedData.message,
+                  userId: user.userId,
+                },
+              });
+            } catch (error) {
+              console.error("Error saving drawing message:", error);
             }
-          } catch (error) {
-            console.error("Error saving drawing message:", error);
+          }
+
+          for (const [client, u] of users.entries()) {
+            if (u.rooms.includes(parsedData.roomId)) {
+              client.send(
+                JSON.stringify({
+                  type: "chat",
+                  roomId: parsedData.roomId,
+                  message: parsedData.message,
+                  from: user.userId,
+                })
+              );
+            }
           }
           break;
         
@@ -214,34 +218,38 @@ const server = Bun.serve({
             return;
           }
 
-          try {
-            await db.drawing.deleteMany({
-              where: {
-                roomId: Number(parsedData.roomId),
-              },
-            });
+          const isDemoClearRoom = parsedData.roomId.startsWith('demo-');
 
-            console.log(`🧹 Cleared all drawings for room ${parsedData.roomId} by user ${user.userId}`);
+          if (!isDemoClearRoom) {
+            try {
+              await db.drawing.deleteMany({
+                where: {
+                  roomId: Number(parsedData.roomId),
+                },
+              });
 
-            for (const [client, u] of users.entries()) {
-              if (u.rooms.includes(parsedData.roomId)) {
-                client.send(
-                  JSON.stringify({
-                    type: "clear_all",
-                    roomId: parsedData.roomId,
-                    from: user.userId,
-                  })
-                );
-              }
+              console.log(`🧹 Cleared all drawings for room ${parsedData.roomId} by user ${user.userId}`);
+            } catch (error) {
+              console.error("Error clearing room data:", error);
+              ws.send(
+                JSON.stringify({
+                  type: "error",
+                  message: "Failed to clear canvas",
+                })
+              );
             }
-          } catch (error) {
-            console.error("Error clearing room data:", error);
-            ws.send(
-              JSON.stringify({
-                type: "error",
-                message: "Failed to clear canvas",
-              })
-            );
+          }
+
+          for (const [client, u] of users.entries()) {
+            if (u.rooms.includes(parsedData.roomId)) {
+              client.send(
+                JSON.stringify({
+                  type: "clear_all",
+                  roomId: parsedData.roomId,
+                  from: user.userId,
+                })
+              );
+            }
           }
           break;
 

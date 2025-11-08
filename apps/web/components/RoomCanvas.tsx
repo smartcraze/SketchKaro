@@ -55,21 +55,8 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
       };
 
       ws.onerror = (error) => {
-        console.error("❌ WebSocket error:", {
-          error,
-          url: wsUrl,
-          readyState: ws.readyState,
-          timestamp: new Date().toISOString()
-        });
-        
+        console.error("❌ WebSocket error:", error);
         setConnectionStatus('error');
-        
-        // Try to provide more helpful error information
-        if (ws.readyState === WebSocket.CONNECTING) {
-          console.error("🔴 WebSocket failed to connect. Is the WebSocket server running on port 8080?");
-        } else if (ws.readyState === WebSocket.CLOSING || ws.readyState === WebSocket.CLOSED) {
-          console.error("🔴 WebSocket connection was closed unexpectedly");
-        }
       };
 
       ws.onclose = (event) => {
@@ -120,51 +107,43 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
               <div className="text-lg text-muted-foreground">Please sign in to join this room</div>
               <button 
                 onClick={() => window.location.href = '/signin'}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-6 py-2 bg-foreground text-background rounded-lg hover:opacity-90 transition-opacity"
               >
                 Sign In
               </button>
             </>
           ) : connectionStatus === 'error' ? (
             <>
-              <div className="text-red-500 text-lg">❌ Connection Failed</div>
-              <div className="text-muted-foreground text-sm mb-4">
-                WebSocket server is not running. Please start the backend services.
-              </div>
-              <div className="bg-muted p-4 rounded-lg text-left text-sm">
-                <p className="font-semibold mb-2">To fix this issue:</p>
-                <ol className="list-decimal list-inside space-y-1">
-                  <li>Open a terminal in your project root</li>
-                  <li>Run: <code className="bg-background px-1 rounded">bun run dev</code></li>
-                  <li>Wait for services to start</li>
-                  <li>Refresh this page</li>
-                </ol>
-              </div>
-              {retryCount < maxRetries && (
-                <div className="text-xs text-muted-foreground">
-                  Retrying... ({retryCount}/{maxRetries})
-                </div>
-              )}
-            </>
-          ) : connectionStatus === 'disconnected' && retryCount >= maxRetries ? (
-            <>
-              <div className="text-red-500 text-lg">🔌 Connection Lost</div>
-              <div className="text-muted-foreground text-sm">
-                Unable to connect after {maxRetries} attempts. Please check if the WebSocket server is running.
+              <div className="text-lg font-medium">Connection Failed</div>
+              <div className="text-sm text-muted-foreground">
+                WebSocket server is not running on port 8080
               </div>
               <button 
                 onClick={manualRetry}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="px-6 py-2 bg-foreground text-background rounded-lg hover:opacity-90 transition-opacity"
+              >
+                Retry Connection
+              </button>
+            </>
+          ) : connectionStatus === 'disconnected' && retryCount >= maxRetries ? (
+            <>
+              <div className="text-lg font-medium">Connection Lost</div>
+              <div className="text-sm text-muted-foreground">
+                Unable to connect after {maxRetries} attempts
+              </div>
+              <button 
+                onClick={manualRetry}
+                className="px-6 py-2 bg-foreground text-background rounded-lg hover:opacity-90 transition-opacity"
               >
                 Try Again
               </button>
             </>
           ) : (
             <>
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <div className="text-lg text-muted-foreground">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground mx-auto"></div>
+              <div className="text-sm text-muted-foreground">
                 {connectionStatus === 'connecting' ? 
-                  (isDemo ? "Connecting to demo session..." : "Connecting to room...") :
+                  (isDemo ? "Connecting to demo..." : "Connecting to room...") :
                   "Reconnecting..."
                 }
               </div>
