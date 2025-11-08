@@ -120,3 +120,6 @@ prisma/migrations/
 
 # TypeScript
 *.tsbuildinfo
+
+# Test packages (not needed in production)
+packages/test/

@@ -16,15 +16,16 @@ COPY packages/ ./packages/
 COPY apps/ws-backend/ ./apps/ws-backend/
 
 # Install dependencies without running postinstall scripts
+# Ignore errors from optional dependencies
+RUN bun install --ignore-scripts || true
 RUN bun install --ignore-scripts
 
 # Generate Prisma client (ws-backend uses database too)
 WORKDIR /app/packages/db
 RUN bunx prisma generate
 
-# Change to ws-backend directory and build
+# Change to ws-backend directory
 WORKDIR /app/apps/ws-backend
-RUN bun run build
 
 EXPOSE 8080
 
@@ -32,4 +33,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
-CMD ["bun", "run", "start"]
+# Run the TypeScript file directly with Bun (no build needed)
+CMD ["bun", "run", "index.ts"]

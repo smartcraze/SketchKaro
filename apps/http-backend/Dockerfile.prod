@@ -16,15 +16,16 @@ COPY packages/ ./packages/
 COPY apps/http-backend/ ./apps/http-backend/
 
 # Install dependencies without running postinstall scripts
+# Ignore errors from optional dependencies
+RUN bun install --ignore-scripts || true
 RUN bun install --ignore-scripts
 
 # Generate Prisma client manually
 WORKDIR /app/packages/db
 RUN bunx prisma generate
 
-# Change to http-backend directory and build
+# Change to http-backend directory
 WORKDIR /app/apps/http-backend
-RUN bun run build
 
 EXPOSE 3001
 
@@ -32,4 +33,5 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:3001/health || exit 1
 
-CMD ["bun", "run", "start"]
+# Run the TypeScript file directly with Bun (no build needed)
+CMD ["bun", "run", "index.ts"]
