@@ -251,7 +251,7 @@ export function Canvas({
 
       {/* Export Buttons (Download/Share) - Top Right */}
       <div className="fixed top-6 right-6 z-10">
-        <ExportButtons onExport={handleExport} />
+        <ExportButtons onExport={handleExport} roomId={roomId} />
       </div>
 
       {/* Zoom Controls - Bottom Left (Horizontal) */}
