@@ -14,22 +14,31 @@ interface User {
 
 const users = new Map<WebSocket, User>();
 
+/**
+ * Verify and decode JWT token
+ * 
+ * @param token - JWT authentication token
+ * @returns User ID if token is valid, null otherwise
+ */
 function checkToken(token: string): string | null {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
     return decoded.userId || null;
   } catch (err) {
-    console.error("JWT error:", err);
+    console.error("JWT verification error:", err);
     return null;
   }
 }
 
+/**
+ * WebSocket server for real-time collaborative drawing
+ * Handles connections, authentication, room management, and message broadcasting
+ */
 const server = Bun.serve({
   port: 8080,
   fetch(req, server) {
     const url = new URL(req.url);
     
-    // Health check endpoint
     if (url.pathname === "/health") {
       return new Response(JSON.stringify({ status: "healthy", timestamp: new Date().toISOString() }), {
         headers: { "Content-Type": "application/json" }
@@ -38,7 +47,6 @@ const server = Bun.serve({
     
     const token = url.searchParams.get("token");
 
-    // Allow connections without token for demo purposes
     const upgraded = server.upgrade(req, {
       data: { token: token || null },
     });
@@ -49,6 +57,10 @@ const server = Bun.serve({
   },
 
   websocket: {
+    /**
+     * Handle new WebSocket connection
+     * Authenticates user and initializes connection state
+     */
     async open(ws) {
       const { token } = ws.data as { token: string | null };
 
@@ -63,7 +75,6 @@ const server = Bun.serve({
         }
         name = await getNameFromUserId(userId);
       } else {
-        // For demo mode, generate a temporary user ID
         userId = `demo-user-${Math.random().toString(36).substr(2, 9)}`;
         name = `Demo User ${userId.slice(-4)}`;
         console.log(`🎭 Demo user connected: ${userId}`);
@@ -76,13 +87,16 @@ const server = Bun.serve({
         name
       });
 
-      // Attach userId to data for message handling
       (ws.data as any).userId = userId;
       (ws.data as any).name = name;
 
       console.log(`✅ WebSocket connected: ${userId}`);
     },
 
+    /**
+     * Handle incoming WebSocket messages
+     * Routes messages based on type: ping, join_room, leave_room, chat, chat_message, clear_all
+     */
     async message(ws, message) {
       const user = users.get(ws as unknown as WebSocket);
       if (!user) {
@@ -97,7 +111,6 @@ const server = Bun.serve({
         console.error("Invalid JSON from client:", message);
         return;
       }
-      console.log("parsedData", parsedData);
 
       switch (parsedData.type) {
         case "ping":
@@ -110,7 +123,6 @@ const server = Bun.serve({
             console.log(`${user.userId} joined room ${parsedData.roomId}`);
           }
           ws.subscribe(parsedData.roomId);
-          
           break;
 
         case "leave_room":
@@ -119,36 +131,51 @@ const server = Bun.serve({
           break;
 
         case "chat":
-          if (!parsedData.roomId || !parsedData.message) return;
-          if (!user.rooms.includes(parsedData.roomId)) return;
+          if (!parsedData.roomId || !parsedData.message) {
+            console.warn("Chat message missing roomId or message");
+            return;
+          }
+          if (!user.rooms.includes(parsedData.roomId)) {
+            console.warn(`User ${user.userId} not in room ${parsedData.roomId}`);
+            return;
+          }
 
-          await db.drawing.create({
-            data: {
-              roomId: Number(parsedData.roomId),
-              message: parsedData.message,
-              userId: user.userId,
-            },
-          });
+          try {
+            await db.drawing.create({
+              data: {
+                roomId: Number(parsedData.roomId),
+                message: parsedData.message,
+                userId: user.userId,
+              },
+            });
 
-          for (const [client, u] of users.entries()) {
-            if (u.rooms.includes(parsedData.roomId)) {
-              client.send(
-                JSON.stringify({
-                  type: "chat",
-                  roomId: parsedData.roomId,
-                  message: parsedData.message,
-                  from: user.userId,
-                })
-              );
+            for (const [client, u] of users.entries()) {
+              if (u.rooms.includes(parsedData.roomId)) {
+                client.send(
+                  JSON.stringify({
+                    type: "chat",
+                    roomId: parsedData.roomId,
+                    message: parsedData.message,
+                    from: user.userId,
+                  })
+                );
+              }
             }
+          } catch (error) {
+            console.error("Error saving drawing message:", error);
           }
           break;
         
         case "chat_message":
-          if (!parsedData.roomId || !parsedData.message) return;
-          if (!user.rooms.includes(parsedData.roomId)) return;
+          if (!parsedData.roomId || !parsedData.message) {
+            console.warn("Chat message missing roomId or message");
+            return;
+          }
+          if (!user.rooms.includes(parsedData.roomId)) {
+            console.warn(`User ${user.userId} not in room ${parsedData.roomId}`);
+            return;
+          }
 
-          // Only save to database for non-demo rooms
           const isDemo = parsedData.roomId.startsWith('demo-');
           
           if (!isDemo && !user.userId.startsWith('demo-user-')) {
@@ -162,7 +189,6 @@ const server = Bun.serve({
               });
             } catch (error) {
               console.error("Error saving chat message to database:", error);
-              // Continue anyway - don't break real-time chat for database errors
             }
           }
 
@@ -179,8 +205,14 @@ const server = Bun.serve({
           break;
 
         case "clear_all":
-          if (!parsedData.roomId) return;
-          if (!user.rooms.includes(parsedData.roomId)) return;
+          if (!parsedData.roomId) {
+            console.warn("Clear all missing roomId");
+            return;
+          }
+          if (!user.rooms.includes(parsedData.roomId)) {
+            console.warn(`User ${user.userId} not in room ${parsedData.roomId}`);
+            return;
+          }
 
           try {
             await db.drawing.deleteMany({
@@ -189,9 +221,7 @@ const server = Bun.serve({
               },
             });
 
-            console.log(
-              `🧹 Cleared all drawings for room ${parsedData.roomId} by user ${user.userId}`
-            );
+            console.log(`🧹 Cleared all drawings for room ${parsedData.roomId} by user ${user.userId}`);
 
             for (const [client, u] of users.entries()) {
               if (u.rooms.includes(parsedData.roomId)) {
@@ -220,6 +250,10 @@ const server = Bun.serve({
       }
     },
 
+    /**
+     * Handle WebSocket disconnection
+     * Cleanup user data and notify other users
+     */
     close(ws) {
       const user = users.get(ws as unknown as WebSocket);
       if (user) {
@@ -230,6 +264,4 @@ const server = Bun.serve({
   },
 });
 
-console.log(
-  `🔥 WebSocket server running at ws://${server.hostname}:${server.port}`
-);
+console.log(`🔥 WebSocket server running at ws://${server.hostname}:${server.port}`);

@@ -3,6 +3,11 @@ import { CanvasRenderer } from "./CanvasRenderer";
 import { ShapeManager } from "./ShapeManager";
 import { getExistingShapes } from "@/draw/http";
 
+/**
+ * Main game/drawing engine class
+ * Manages canvas interactions, drawing tools, viewport transformations, and shape rendering
+ * Handles mouse/touch events, zoom/pan functionality, and real-time collaboration via WebSocket
+ */
 export class Game {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
@@ -11,13 +16,11 @@ export class Game {
   private roomId: string;
   private socket: WebSocket;
 
-  // Drawing state
   private selectedTool: Tool = "pan";
   private selectedColor: string = "#ffffff";
   private strokeWidth: number = 2;
   private fontSize: number = 16;
 
-  // Current drawing state
   private clicked: boolean = false;
   private startX = 0;
   private startY = 0;
@@ -25,17 +28,14 @@ export class Game {
   private currentPath: { x: number; y: number }[] = [];
   private lastPoint: { x: number; y: number } | null = null;
 
-  // Infinite canvas viewport
   private viewport: Viewport;
   private isPanning = false;
   private lastPanPoint = { x: 0, y: 0 };
   private panStartPoint = { x: 0, y: 0 };
-  private panButton = 1; // Middle mouse button for panning
+  private panButton = 1;
 
-  // Cursor tracking removed for simplicity
   private currentUserId: string | null = null;
 
-  // Touch and zoom support - Legacy properties (keeping for compatibility)
   private scale = 1;
   private offsetX = 0;
   private offsetY = 0;
@@ -49,7 +49,6 @@ export class Game {
     this.socket = socket;
     this.clicked = false;
 
-    // Initialize infinite canvas viewport
     this.viewport = {
       x: 0,
       y: 0,
@@ -58,7 +57,6 @@ export class Game {
       height: canvas.height,
     };
 
-    // Initialize modular components
     this.renderer = new CanvasRenderer(canvas, this.ctx);
     this.shapeManager = new ShapeManager();
 
@@ -67,7 +65,10 @@ export class Game {
     this.initMouseHandlers();
   }
 
-  destroy() {
+  /**
+   * Cleanup event listeners and resources
+   */
+  destroy(): void {
     this.canvas.removeEventListener("mousedown", this.mouseDownHandler);
     this.canvas.removeEventListener("mouseup", this.mouseUpHandler);
     this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
@@ -78,61 +79,96 @@ export class Game {
     window.removeEventListener("resize", this.handleResize);
   }
 
-  // Public API methods
-  setTool(tool: Tool) {
+  /**
+   * Set the active drawing tool
+   * @param tool - The tool to activate (pan, pencil, rect, circle, eraser, text)
+   */
+  setTool(tool: Tool): void {
     this.selectedTool = tool;
   }
 
-  setColor(color: string) {
+  /**
+   * Set the drawing color
+   * @param color - Color string (hex, rgb, etc.)
+   */
+  setColor(color: string): void {
     this.selectedColor = color;
   }
 
-  setStrokeWidth(width: number) {
+  /**
+   * Set the stroke width for drawing
+   * @param width - Stroke width in pixels
+   */
+  setStrokeWidth(width: number): void {
     this.strokeWidth = width;
   }
 
-  setFontSize(size: number) {
+  /**
+   * Set the font size for text tool
+   * @param size - Font size in pixels
+   */
+  setFontSize(size: number): void {
     this.fontSize = size;
   }
 
-  // Infinite canvas coordinate transformation methods
-  private screenToCanvas(
-    screenX: number,
-    screenY: number
-  ): { x: number; y: number } {
+  /**
+   * Convert screen coordinates to canvas coordinates
+   * Accounts for viewport scaling and offset
+   * @param screenX - X coordinate in screen space
+   * @param screenY - Y coordinate in screen space
+   * @returns Canvas coordinates
+   */
+  private screenToCanvas(screenX: number, screenY: number): { x: number; y: number } {
     return {
       x: (screenX - this.viewport.x) / this.viewport.scale,
       y: (screenY - this.viewport.y) / this.viewport.scale,
     };
   }
 
-  private canvasToScreen(
-    canvasX: number,
-    canvasY: number
-  ): { x: number; y: number } {
+  /**
+   * Convert canvas coordinates to screen coordinates
+   * @param canvasX - X coordinate in canvas space
+   * @param canvasY - Y coordinate in canvas space
+   * @returns Screen coordinates
+   */
+  private canvasToScreen(canvasX: number, canvasY: number): { x: number; y: number } {
     return {
       x: canvasX * this.viewport.scale + this.viewport.x,
       y: canvasY * this.viewport.scale + this.viewport.y,
     };
   }
 
-  // Pan the viewport
-  pan(deltaX: number, deltaY: number) {
+  /**
+   * Pan the viewport by delta amount
+   * @param deltaX - Horizontal pan distance
+   * @param deltaY - Vertical pan distance
+   */
+  pan(deltaX: number, deltaY: number): void {
     this.viewport.x += deltaX;
     this.viewport.y += deltaY;
     this.applyTransform();
     this.clearCanvas();
   }
 
-  // Set viewport center to specific canvas coordinates
-  centerViewport(canvasX: number, canvasY: number) {
+  /**
+   * Center viewport on specific canvas coordinates
+   * @param canvasX - X coordinate to center on
+   * @param canvasY - Y coordinate to center on
+   */
+  centerViewport(canvasX: number, canvasY: number): void {
     this.viewport.x = -canvasX * this.viewport.scale + this.viewport.width / 2;
     this.viewport.y = -canvasY * this.viewport.scale + this.viewport.height / 2;
     this.applyTransform();
     this.clearCanvas();
   }
 
-  addText(text: string, x: number, y: number) {
+  /**
+   * Add text to the canvas
+   * @param text - Text content
+   * @param x - X coordinate
+   * @param y - Y coordinate
+   */
+  addText(text: string, x: number, y: number): void {
     const textShape: Shape = {
       type: "text",
       x,
@@ -147,21 +183,28 @@ export class Game {
     this.clearCanvas();
   }
 
-  clearCanvas() {
-    // Use the renderer's renderAll method which handles all transformations
+  /**
+   * Clear and re-render the canvas
+   */
+  clearCanvas(): void {
     this.renderer.renderAll(this.shapeManager.getAllShapes(), this.viewport);
-
-    // Apply transform for any subsequent drawing operations
     this.applyTransform();
   }
 
-  clearAll() {
+  /**
+   * Clear all shapes from the canvas
+   */
+  clearAll(): void {
     this.shapeManager.clearAll();
     this.sendClearToServer();
     this.clearCanvas();
   }
 
-  undo() {
+  /**
+   * Undo the last action
+   * @returns True if undo was successful
+   */
+  undo(): boolean {
     if (this.shapeManager.undo()) {
       this.clearCanvas();
       return true;
@@ -169,7 +212,11 @@ export class Game {
     return false;
   }
 
-  redo() {
+  /**
+   * Redo the previously undone action
+   * @returns True if redo was successful
+   */
+  redo(): boolean {
     if (this.shapeManager.redo()) {
       this.clearCanvas();
       return true;
@@ -185,37 +232,38 @@ export class Game {
     return this.shapeManager.canRedo();
   }
 
-  // Method to render canvas content for PNG export
-  renderForExport() {
+  /**
+   * Render canvas for PNG export without transformations
+   */
+  renderForExport(): void {
     this.renderer.renderAllForExport(this.shapeManager.getAllShapes());
-    // Reapply current transform after export rendering
     this.applyTransform();
   }
 
-  // Get all shapes for export
-  getAllShapes() {
+  getAllShapes(): Shape[] {
     return this.shapeManager.getAllShapes();
   }
 
-  zoom(factor: number, centerX?: number, centerY?: number) {
+  /**
+   * Zoom the viewport
+   * @param factor - Zoom factor (>1 zooms in, <1 zooms out)
+   * @param centerX - Optional X coordinate to zoom towards
+   * @param centerY - Optional Y coordinate to zoom towards
+   */
+  zoom(factor: number, centerX?: number, centerY?: number): void {
     const newScale = Math.max(0.1, Math.min(10, this.viewport.scale * factor));
 
-    // Use provided center or canvas center
     const zoomCenterX = centerX ?? this.viewport.width / 2;
     const zoomCenterY = centerY ?? this.viewport.height / 2;
 
-    // Calculate the canvas point being zoomed to
     const canvasPoint = this.screenToCanvas(zoomCenterX, zoomCenterY);
 
-    // Update scale
     this.viewport.scale = newScale;
 
-    // Adjust viewport to keep the zoom center point in the same screen position
     const newScreenPoint = this.canvasToScreen(canvasPoint.x, canvasPoint.y);
     this.viewport.x += zoomCenterX - newScreenPoint.x;
     this.viewport.y += zoomCenterY - newScreenPoint.y;
 
-    // Update legacy properties for compatibility
     this.scale = newScale;
     this.offsetX = this.viewport.x;
     this.offsetY = this.viewport.y;
@@ -224,12 +272,14 @@ export class Game {
     this.clearCanvas();
   }
 
-  resetZoom() {
+  /**
+   * Reset zoom and pan to default
+   */
+  resetZoom(): void {
     this.viewport.scale = 1;
     this.viewport.x = 0;
     this.viewport.y = 0;
 
-    // Update legacy properties for compatibility
     this.scale = 1;
     this.offsetX = 0;
     this.offsetY = 0;
@@ -238,8 +288,10 @@ export class Game {
     this.clearCanvas();
   }
 
-  // Private helper methods
-  private applyTransform() {
+  /**
+   * Apply viewport transformation to canvas context
+   */
+  private applyTransform(): void {
     this.ctx.setTransform(
       this.viewport.scale,
       0,
@@ -250,7 +302,11 @@ export class Game {
     );
   }
 
-  private sendShapeToServer(shape: Shape) {
+  /**
+   * Send shape data to server for real-time collaboration
+   * @param shape - Shape to broadcast
+   */
+  private sendShapeToServer(shape: Shape): void {
     this.socket.send(
       JSON.stringify({
         type: "chat",
@@ -260,7 +316,10 @@ export class Game {
     );
   }
 
-  private sendClearToServer() {
+  /**
+   * Send clear all command to server
+   */
+  private sendClearToServer(): void {
     this.socket.send(
       JSON.stringify({
         type: "clear_all",
@@ -269,15 +328,16 @@ export class Game {
     );
   }
 
-  private async init() {
+  /**
+   * Initialize canvas and load existing shapes
+   */
+  private async init(): Promise<void> {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
 
-    // Update viewport dimensions
     this.viewport.width = this.canvas.width;
     this.viewport.height = this.canvas.height;
 
-    // Handle window resize
     window.addEventListener("resize", this.handleResize);
 
     try {
@@ -292,7 +352,10 @@ export class Game {
     this.clearCanvas();
   }
 
-  private handleResize = () => {
+  /**
+   * Handle window resize events
+   */
+  private handleResize = (): void => {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
     this.viewport.width = this.canvas.width;
@@ -301,16 +364,17 @@ export class Game {
     this.clearCanvas();
   };
 
-  private initHandlers() {
+  /**
+   * Initialize WebSocket message handlers
+   */
+  private initHandlers(): void {
     this.socket.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
 
-      // Let Chat component handle chat messages - don't process them here
       if (data.type === "chat_message") {
-        return; // Skip processing, let Chat component handle it
+        return;
       }
 
-      // Handle direct clear_all message from server
       if (data.type === "clear_all") {
         console.log("Received clear_all command from server");
         this.shapeManager.clearAll();
@@ -320,8 +384,6 @@ export class Game {
 
       if (data.type === "chat") {
         const parsedMessage = JSON.parse(data.message);
-
-        // Cursor tracking removed for simplicity
 
         if (parsedMessage.type === "user_joined") {
           this.currentUserId = parsedMessage.userId;
@@ -339,27 +401,25 @@ export class Game {
     });
   }
 
-  private initMouseHandlers() {
+  /**
+   * Initialize mouse and touch event handlers
+   */
+  private initMouseHandlers(): void {
     this.canvas.addEventListener("mousedown", this.mouseDownHandler);
     this.canvas.addEventListener("mouseup", this.mouseUpHandler);
     this.canvas.addEventListener("mousemove", this.mouseMoveHandler);
-    this.canvas.addEventListener("wheel", this.wheelHandler, {
-      passive: false,
-    });
-    this.canvas.addEventListener("contextmenu", (e) => e.preventDefault()); // Disable context menu
-    this.canvas.addEventListener("touchstart", this.touchStartHandler, {
-      passive: false,
-    });
-    this.canvas.addEventListener("touchend", this.touchEndHandler, {
-      passive: false,
-    });
-    this.canvas.addEventListener("touchmove", this.touchMoveHandler, {
-      passive: false,
-    });
+    this.canvas.addEventListener("wheel", this.wheelHandler, { passive: false });
+    this.canvas.addEventListener("contextmenu", (e) => e.preventDefault());
+    this.canvas.addEventListener("touchstart", this.touchStartHandler, { passive: false });
+    this.canvas.addEventListener("touchend", this.touchEndHandler, { passive: false });
+    this.canvas.addEventListener("touchmove", this.touchMoveHandler, { passive: false });
   }
 
-  // Simplified drawing methods - focusing on core functionality
-  private drawSmoothPath(path: { x: number; y: number }[]) {
+  /**
+   * Draw smooth path using quadratic curves
+   * @param path - Array of points
+   */
+  private drawSmoothPath(path: { x: number; y: number }[]): void {
     if (path.length < 2) return;
 
     this.ctx.lineCap = "round";
@@ -385,13 +445,15 @@ export class Game {
     this.ctx.stroke();
   }
 
-  // Event handlers
-  private mouseDownHandler = (e: MouseEvent) => {
+  /**
+   * Handle mouse down events
+   * Initiates drawing or panning based on tool and mouse button
+   */
+  private mouseDownHandler = (e: MouseEvent): void => {
     const rect = this.canvas.getBoundingClientRect();
     const screenX = e.clientX - rect.left;
     const screenY = e.clientY - rect.top;
 
-    // Check for pan mode (middle mouse button, right click, or pan tool)
     if (e.button === 1 || e.button === 2 || this.selectedTool === "pan") {
       this.isPanning = true;
       this.panStartPoint = { x: screenX, y: screenY };
@@ -399,12 +461,10 @@ export class Game {
       return;
     }
 
-    // Only proceed with drawing if it's left mouse button
     if (e.button !== 0) return;
 
     this.clicked = true;
 
-    // Convert to canvas coordinates
     const canvasPoint = this.screenToCanvas(screenX, screenY);
     this.startX = canvasPoint.x;
     this.startY = canvasPoint.y;
@@ -420,22 +480,22 @@ export class Game {
       }
       this.clicked = false;
     } else if (this.selectedTool === "eraser") {
-      // For eraser, we'll treat it similar to pencil but will remove shapes
       this.isDrawing = true;
       this.currentPath = [{ x: this.startX, y: this.startY }];
       this.lastPoint = { x: this.startX, y: this.startY };
     }
-    // For rect and circle, we just set clicked = true and handle preview in mouseMoveHandler
   };
 
-  private mouseUpHandler = (e: MouseEvent) => {
-    // Handle pan end
+  /**
+   * Handle mouse up events
+   * Completes drawing operations and saves shapes
+   */
+  private mouseUpHandler = (e: MouseEvent): void => {
     if (this.isPanning) {
       this.isPanning = false;
       return;
     }
 
-    // Only proceed if it was left mouse button drawing
     if (!this.clicked) return;
 
     this.clicked = false;
@@ -443,7 +503,6 @@ export class Game {
     const screenX = e.clientX - rect.left;
     const screenY = e.clientY - rect.top;
 
-    // Convert screen coordinates to canvas coordinates
     const canvasPoint = this.screenToCanvas(screenX, screenY);
     const currentX = canvasPoint.x;
     const currentY = canvasPoint.y;
@@ -479,7 +538,7 @@ export class Game {
           startY: this.currentPath[0].y,
           endX: this.currentPath[this.currentPath.length - 1].x,
           endY: this.currentPath[this.currentPath.length - 1].y,
-          strokeWidth: this.strokeWidth, // Use actual stroke width
+          strokeWidth: this.strokeWidth,
           path: this.currentPath,
         };
         this.shapeManager.addShape(shape);
@@ -491,7 +550,6 @@ export class Game {
       return;
     }
 
-    // Handle other shapes
     if (
       this.selectedTool !== "pencil" &&
       this.selectedTool !== "text" &&
@@ -514,8 +572,7 @@ export class Game {
         };
       } else if (this.selectedTool === "circle") {
         const radius = Math.sqrt(
-          Math.pow(currentX - this.startX, 2) +
-            Math.pow(currentY - this.startY, 2)
+          Math.pow(currentX - this.startX, 2) + Math.pow(currentY - this.startY, 2)
         );
         shape = {
           type: "circle",
@@ -535,12 +592,15 @@ export class Game {
     }
   };
 
-  private mouseMoveHandler = (e: MouseEvent) => {
+  /**
+   * Handle mouse move events
+   * Updates drawing preview and handles panning
+   */
+  private mouseMoveHandler = (e: MouseEvent): void => {
     const rect = this.canvas.getBoundingClientRect();
     const screenX = e.clientX - rect.left;
     const screenY = e.clientY - rect.top;
 
-    // Handle panning
     if (this.isPanning) {
       const deltaX = screenX - this.lastPanPoint.x;
       const deltaY = screenY - this.lastPanPoint.y;
@@ -549,18 +609,12 @@ export class Game {
       return;
     }
 
-    // Convert to canvas coordinates for drawing
     const canvasPoint = this.screenToCanvas(screenX, screenY);
     const currentX = canvasPoint.x;
     const currentY = canvasPoint.y;
 
-    // Cursor tracking removed for simplicity
-
     if (this.clicked) {
-      if (
-        (this.selectedTool === "pencil" || this.selectedTool === "eraser") &&
-        this.isDrawing
-      ) {
+      if ((this.selectedTool === "pencil" || this.selectedTool === "eraser") && this.isDrawing) {
         const currentPoint = { x: currentX, y: currentY };
         if (this.lastPoint) {
           const distance = Math.sqrt(
@@ -575,16 +629,14 @@ export class Game {
             this.clearCanvas();
             if (this.currentPath.length > 1) {
               if (this.selectedTool === "eraser") {
-                // For eraser, show the erasing preview
                 this.ctx.save();
                 this.ctx.globalCompositeOperation = "destination-out";
-                this.ctx.lineWidth = this.strokeWidth; // Use actual stroke width
+                this.ctx.lineWidth = this.strokeWidth;
                 this.ctx.lineCap = "round";
                 this.ctx.lineJoin = "round";
                 this.drawSmoothPath(this.currentPath);
                 this.ctx.restore();
               } else {
-                // For pencil, show normal drawing
                 this.ctx.strokeStyle = this.selectedColor;
                 this.ctx.lineWidth = this.strokeWidth;
                 this.drawSmoothPath(this.currentPath);
@@ -592,14 +644,9 @@ export class Game {
             }
           }
         }
-      } else if (
-        this.selectedTool === "rect" ||
-        this.selectedTool === "circle"
-      ) {
-        // Show preview while dragging
+      } else if (this.selectedTool === "rect" || this.selectedTool === "circle") {
         this.clearCanvas();
 
-        // Draw preview shape
         this.ctx.strokeStyle = this.selectedColor;
         this.ctx.lineWidth = this.strokeWidth;
 
@@ -614,8 +661,7 @@ export class Game {
           );
         } else if (this.selectedTool === "circle") {
           const radius = Math.sqrt(
-            Math.pow(currentX - this.startX, 2) +
-              Math.pow(currentY - this.startY, 2)
+            Math.pow(currentX - this.startX, 2) + Math.pow(currentY - this.startY, 2)
           );
           this.ctx.beginPath();
           this.ctx.arc(this.startX, this.startY, radius, 0, Math.PI * 2);
@@ -626,10 +672,12 @@ export class Game {
     }
   };
 
-  private wheelHandler = (e: WheelEvent) => {
+  /**
+   * Handle mouse wheel events for zooming
+   */
+  private wheelHandler = (e: WheelEvent): void => {
     e.preventDefault();
 
-    // Zoom with mouse wheel
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
@@ -638,19 +686,19 @@ export class Game {
     this.zoom(zoomFactor, mouseX, mouseY);
   };
 
-  // Touch handlers (enhanced for infinite canvas)
-  private touchStartHandler = (e: TouchEvent) => {
+  /**
+   * Handle touch start events
+   */
+  private touchStartHandler = (e: TouchEvent): void => {
     e.preventDefault();
     if (e.touches.length === 1) {
       const touch = e.touches[0];
-      const rect = this.canvas.getBoundingClientRect();
       this.mouseDownHandler({
         clientX: touch.clientX,
         clientY: touch.clientY,
         button: 0,
       } as MouseEvent);
     } else if (e.touches.length === 2) {
-      // Start two-finger gesture (zoom/pan)
       this.isPanning = true;
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
@@ -665,7 +713,10 @@ export class Game {
     }
   };
 
-  private touchEndHandler = (e: TouchEvent) => {
+  /**
+   * Handle touch end events
+   */
+  private touchEndHandler = (e: TouchEvent): void => {
     e.preventDefault();
     this.isPanning = false;
     this.lastTouchDistance = 0;
@@ -673,12 +724,14 @@ export class Game {
     this.lastPanPoint = { x: 0, y: 0 };
 
     if (e.touches.length === 0) {
-      // No more touches, trigger mouse up
       this.mouseUpHandler({} as MouseEvent);
     }
   };
 
-  private touchMoveHandler = (e: TouchEvent) => {
+  /**
+   * Handle touch move events for drawing and pinch-to-zoom
+   */
+  private touchMoveHandler = (e: TouchEvent): void => {
     e.preventDefault();
 
     if (e.touches.length === 1 && !this.isPanning) {
@@ -688,7 +741,6 @@ export class Game {
         clientY: touch.clientY,
       } as MouseEvent);
     } else if (e.touches.length === 2) {
-      // Handle two-finger zoom and pan
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const currentDistance = this.getTouchDistance(touch1, touch2);
@@ -696,12 +748,10 @@ export class Game {
       const centerY = (touch1.clientY + touch2.clientY) / 2;
 
       if (this.lastTouchDistance > 0) {
-        // Zoom based on distance change
         const zoomFactor = currentDistance / this.lastTouchDistance;
         const rect = this.canvas.getBoundingClientRect();
         this.zoom(zoomFactor, centerX - rect.left, centerY - rect.top);
 
-        // Pan based on center point movement
         const deltaX = centerX - this.lastPanPoint.x;
         const deltaY = centerY - this.lastPanPoint.y;
         this.pan(deltaX, deltaY);
@@ -712,6 +762,12 @@ export class Game {
     }
   };
 
+  /**
+   * Calculate distance between two touch points
+   * @param touch1 - First touch point
+   * @param touch2 - Second touch point
+   * @returns Distance in pixels
+   */
   private getTouchDistance(touch1: Touch, touch2: Touch): number {
     return Math.sqrt(
       Math.pow(touch2.clientX - touch1.clientX, 2) +

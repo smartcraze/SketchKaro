@@ -4,24 +4,38 @@ import toast from "react-hot-toast";
 
 interface ExportButtonsProps {
   onExport: () => void;
+  roomId?: string;
 }
 
-export function ExportButtons({ onExport }: ExportButtonsProps) {
+export function ExportButtons({ onExport, roomId }: ExportButtonsProps) {
   const handleShare = () => {
     if (typeof window === "undefined" || typeof navigator === "undefined") {
       toast.error("Share is only available in the browser");
       return;
     }
 
-    const currentUrl = window.location.href;
-    navigator.clipboard
-      .writeText(currentUrl)
-      .then(() => {
-        toast.success("🎉 Copied to clipboard! Share this with your friend!");
-      })
-      .catch(() => {
-        toast.error("Failed to copy to clipboard");
-      });
+    // If roomId is provided, share just the room ID
+    if (roomId) {
+      navigator.clipboard
+        .writeText(roomId)
+        .then(() => {
+          toast.success("🎉 Room ID copied! Share it with your friends to join!");
+        })
+        .catch(() => {
+          toast.error("Failed to copy room ID");
+        });
+    } else {
+      // Fallback to sharing the full URL
+      const currentUrl = window.location.href;
+      navigator.clipboard
+        .writeText(currentUrl)
+        .then(() => {
+          toast.success("🎉 Link copied to clipboard!");
+        })
+        .catch(() => {
+          toast.error("Failed to copy to clipboard");
+        });
+    }
   };
 
   return (

@@ -25,6 +25,8 @@
   "dependencies": {
     "@emnapi/wasi-threads": "^1.0.2",
     "@types/cors": "^2.8.19",
+    "@types/jsonwebtoken": "^9.0.10",
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "lucide-react": "^0.515.0",
     "react-hot-toast": "^2.5.2"
