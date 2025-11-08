@@ -1,0 +1,26 @@
+{
+  "name": "@repo/test",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "bun test",
+    "test:ws": "bun test ws-backend.test.ts",
+    "test:http": "bun test http-backend.test.ts",
+    "test:watch": "bun test --watch",
+    "test:check": "pwsh -File run-tests.ps1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@repo/backend-common": "*",
+    "@repo/db": "*",
+    "@repo/common": "*",
+    "jsonwebtoken": "^9.0.2",
+    "@types/jsonwebtoken": "^9.0.9"
+  }
+}
