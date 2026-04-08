@@ -1,3 +1,4 @@
+<img width="1666" height="862" alt="image" src="https://github.com/user-attachments/assets/8060a893-a431-49a7-8a7d-681bf3d08cf2" />
 # ✨ Sketch Karo — Real-time Collaborative Whiteboard
 
 > Built with **Next.js**, **Turborepo**, **Canvas**, **WebSocket**, and **ShadCN UI**
@@ -5,7 +6,7 @@
 
 ## Architecture 
 
-<img width="1666" height="862" alt="image" src="https://github.com/user-attachments/assets/8060a893-a431-49a7-8a7d-681bf3d08cf2" />
+
 
 ## 🚀 Features
 
