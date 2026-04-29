@@ -23,6 +23,7 @@ services:
     build:
       context: .
       dockerfile: apps/http-backend/Dockerfile
+    image: smartcraze/sketchkaro-http-backend:latest
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -41,6 +42,7 @@ services:
     build:
       context: .
       dockerfile: apps/ws-backend/Dockerfile
+    image: smartcraze/sketchkaro-ws-backend:latest
     restart: unless-stopped
     environment:
       - NODE_ENV=production
