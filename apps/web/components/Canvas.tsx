@@ -11,13 +11,11 @@ import { ColorPanel } from "./Toolbar/ColorPanel";
 import { ActionButtons } from "./Toolbar/ActionButtons";
 import { ExportButtons } from "./Toolbar/ExportButtons";
 import { ZoomControls } from "./Toolbar/ZoomControls";
-import { MobileControls } from "./Toolbar/MobileControls";
 import { WelcomeOverlay } from "./WelcomeOverlay";
 // CursorOverlay removed for simplicity
 
-// Import custom hooks
-import { useMobileDetection } from "@/hooks/useMobileDetection";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { Users } from "lucide-react";
 
 // Custom CSS styles for the slider
 const sliderStyles = `
@@ -77,9 +75,11 @@ export type DrawingColor = string;
 export function Canvas({
   roomId,
   socket,
+  connectedCount,
 }: {
   socket: WebSocket;
   roomId: string;
+  connectedCount: number;
 }) {
   // Canvas and game state
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -103,9 +103,6 @@ export function Canvas({
   } | null>(null);
 
   // Cursor tracking removed for simplicity
-
-  // Mobile detection
-  const isMobile = useMobileDetection();
 
   // Game initialization
   useEffect(() => {
@@ -212,11 +209,11 @@ export function Canvas({
   });
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
+    <div className="relative w-screen h-screen overflow-hidden bg-black">
       {/* Inject custom slider styles */}
       <style dangerouslySetInnerHTML={{ __html: sliderStyles }} />
 
-      <canvas ref={canvasRef}></canvas>
+      <canvas ref={canvasRef} className="block bg-black"></canvas>
 
       {/* Welcome Overlay */}
       <WelcomeOverlay />
@@ -250,7 +247,15 @@ export function Canvas({
       </div>
 
       {/* Export Buttons (Download/Share) - Top Right */}
-      <div className="fixed top-6 right-6 z-10">
+      <div className="fixed top-6 right-6 z-20 flex items-center gap-2 rounded-full border border-white/15 bg-black/70 px-4 py-2 text-sm font-medium text-white shadow-lg backdrop-blur-md">
+        <Users className="h-4 w-4 text-[#E3FE00]" />
+        <span>{connectedCount}</span>
+        <span className="hidden sm:inline text-white/55">
+          {connectedCount === 1 ? "person" : "people"} online
+        </span>
+      </div>
+
+      <div className="fixed top-20 right-6 z-10">
         <ExportButtons onExport={handleExport} roomId={roomId} />
       </div>
 
@@ -261,14 +266,6 @@ export function Canvas({
         onResetZoom={handleResetZoom}
       />
 
-      {/* Mobile Controls */}
-      {isMobile && (
-        <MobileControls
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-          onResetZoom={handleResetZoom}
-        />
-      )}
     </div>
   );
 }

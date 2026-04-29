@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, MessageCircle, X, Users } from 'lucide-react';
+import { Send, MessageCircle, X } from 'lucide-react';
 import { HTTP_BACKEND } from '@/Config';
 
 interface ChatMessage {
@@ -11,6 +11,7 @@ interface ChatMessage {
   name: string;
   timestamp: Date;
   roomId: string;
+  pending?: boolean;
 }
 
 interface ChatProps {
@@ -28,6 +29,11 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const currentUserRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    currentUserRef.current = currentUser;
+  }, [currentUser]);
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -137,8 +143,9 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
         const data = JSON.parse(event.data);
         
         if (data.type === 'chat_message' && data.roomId === roomId) {
+          const messageId = data.clientMessageId || `${data.from}-${Date.now()}`;
           const newMsg: ChatMessage = {
-            id: `${data.from}-${Date.now()}`,
+            id: messageId,
             message: data.message,
             from: data.from,
             name: data.name || 'Unknown User',
@@ -146,10 +153,22 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
             roomId: data.roomId,
           };
           
-          setMessages(prev => [...prev, newMsg]);
+          setMessages(prev => {
+            const existingIndex = prev.findIndex((message) => message.id === messageId);
+
+            if (existingIndex === -1) {
+              return [...prev, newMsg];
+            }
+
+            return prev.map((message, index) =>
+              index === existingIndex
+                ? { ...newMsg, timestamp: message.timestamp }
+                : message
+            );
+          });
           
           // Auto-open chat and reset unread count when message is from another user
-          if (data.from !== currentUser) {
+          if (data.from !== currentUserRef.current) {
             if (!isOpen) {
               // Auto-open chat when new message arrives from another user
               onToggle();
@@ -165,17 +184,36 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
 
     socket.addEventListener('message', handleMessage);
     return () => socket.removeEventListener('message', handleMessage);
-  }, [socket, roomId, isOpen, currentUser]); // Removed onToggle from dependency array
+  }, [socket, roomId, isOpen, onToggle]);
 
   const sendMessage = () => {
-    if (!socket || !newMessage.trim() || !roomId) return;
+    const trimmedMessage = newMessage.trim();
+
+    if (!socket || !trimmedMessage || !roomId || socket.readyState !== WebSocket.OPEN) return;
+
+    const clientMessageId =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
     const messageData = {
       type: 'chat_message',
       roomId: roomId,
-      message: newMessage.trim(),
+      message: trimmedMessage,
+      clientMessageId,
     };
 
+    const optimisticMessage: ChatMessage = {
+      id: clientMessageId,
+      message: trimmedMessage,
+      from: currentUser || 'me',
+      name: 'You',
+      timestamp: new Date(),
+      roomId,
+      pending: true,
+    };
+
+    setMessages(prev => [...prev, optimisticMessage]);
     socket.send(JSON.stringify(messageData));
     setNewMessage('');
   };
@@ -339,8 +377,10 @@ function Chat({ socket, roomId, isOpen, onToggle }: ChatProps) {
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            onKeyDown={handleInputKeyDown}
+            onKeyDown={(e) => {
+              handleInputKeyDown(e);
+              handleKeyPress(e);
+            }}
             onFocus={handleInputFocus}
             placeholder="Type a message..."
             className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white text-sm"

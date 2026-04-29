@@ -1,7 +1,7 @@
 "use client";
 
 import { WS_URL } from "@/Config";
-import { useEffect,  useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Canvas } from "./Canvas";
 import Chat from "./chat/chat";
 
@@ -11,6 +11,9 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
   const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('connecting');
   const [retryCount, setRetryCount] = useState(0);
+  const [reconnectKey, setReconnectKey] = useState(0);
+  const [connectedCount, setConnectedCount] = useState(1);
+  const retryCountRef = useRef(0);
   const maxRetries = 3;
 
   useEffect(() => {
@@ -34,24 +37,47 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
       return; // Wait for token to be available for regular rooms
     }
 
+    let isDisposed = false;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
     const connectWebSocket = () => {
+      if (isDisposed) return null;
+
       console.log("🔗 Connecting to WebSocket for room:", roomId, isDemo ? "(demo mode)" : "(authenticated)");
       setConnectionStatus('connecting');
       
       // Create WebSocket URL - include token if available
-      const wsUrl = token ? `${WS_URL}?token=${token}` : WS_URL;
+      const wsUrl = token ? `${WS_URL}?token=${encodeURIComponent(token)}` : WS_URL;
       const ws = new WebSocket(wsUrl);
 
       ws.onopen = () => {
+        if (isDisposed) {
+          ws.close(1000, "Component unmounting");
+          return;
+        }
+
         console.log("✅ WebSocket connected, joining room:", roomId);
         setSocket(ws);
         setConnectionStatus('connected');
-        setRetryCount(0); // Reset retry count on successful connection
+        retryCountRef.current = 0;
+        setRetryCount(0);
         const data = JSON.stringify({
           type: "join_room",
           roomId,
         });
         ws.send(data);
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+
+          if (data.type === "presence_count" && data.roomId === roomId) {
+            setConnectedCount(Number(data.count) || 1);
+          }
+        } catch (error) {
+          console.error("Failed to parse room socket message:", error);
+        }
       };
 
       ws.onerror = (error) => {
@@ -65,10 +91,12 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
         setConnectionStatus('disconnected');
         
         // Auto-retry connection if it wasn't intentional and we haven't exceeded max retries
-        if (event.code !== 1000 && retryCount < maxRetries) {
-          console.log(`🔄 Retrying connection (${retryCount + 1}/${maxRetries}) in 2 seconds...`);
-          setTimeout(() => {
-            setRetryCount(prev => prev + 1);
+        if (!isDisposed && event.code !== 1000 && retryCountRef.current < maxRetries) {
+          const nextRetry = retryCountRef.current + 1;
+          retryCountRef.current = nextRetry;
+          setRetryCount(nextRetry);
+          console.log(`🔄 Retrying connection (${nextRetry}/${maxRetries}) in 2 seconds...`);
+          reconnectTimer = setTimeout(() => {
             connectWebSocket();
           }, 2000);
         }
@@ -80,19 +108,25 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
     const ws = connectWebSocket();
 
     return () => {
+      isDisposed = true;
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+      }
       if (ws) {
         ws.close(1000, "Component unmounting");
       }
     };
-  }, [token, roomId, retryCount]);
+  }, [token, roomId, reconnectKey]);
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
 
   const manualRetry = () => {
+    retryCountRef.current = 0;
     setRetryCount(0);
     setConnectionStatus('connecting');
+    setReconnectKey((key) => key + 1);
   };
 
   if (!socket) {
@@ -100,7 +134,7 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
     const needsAuth = !isDemo && !token;
     
     return (
-      <div className="flex items-center justify-center h-screen bg-background">
+      <div className="flex items-center justify-center h-screen bg-black text-white">
         <div className="text-center space-y-4 max-w-md mx-auto p-6">
           {needsAuth ? (
             <>
@@ -160,8 +194,8 @@ export function RoomCanvas({ roomId }: { roomId: string }) {
   }
 
   return (
-    <div className="relative w-full h-full">
-      <Canvas roomId={roomId} socket={socket} />
+    <div className="relative w-full h-full bg-black">
+      <Canvas roomId={roomId} socket={socket} connectedCount={connectedCount} />
       <Chat 
         socket={socket} 
         roomId={roomId} 

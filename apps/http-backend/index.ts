@@ -167,8 +167,8 @@ app.get("/room/:roomId", async (req: Request, res: Response) => {
     
     const messages = await db.drawing.findMany({
       where: { roomId: Number(roomId) },
-      take: 50,
-      orderBy: { createdAt: "desc" },
+      take: 1000,
+      orderBy: { createdAt: "asc" },
     });
     
     res.status(200).json(messages);

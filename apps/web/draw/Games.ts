@@ -1,4 +1,4 @@
-import { Tool, Shape, DrawingState, Viewport } from "./types";
+import { Tool, Shape, Viewport } from "./types";
 import { CanvasRenderer } from "./CanvasRenderer";
 import { ShapeManager } from "./ShapeManager";
 import { getExistingShapes } from "@/draw/http";
@@ -35,6 +35,10 @@ export class Game {
   private panButton = 1;
 
   private currentUserId: string | null = null;
+  private isHydrated = false;
+  private queuedRemoteShapes: Shape[] = [];
+  private remotePreviewShapes = new Map<string, Shape>();
+  private lastPreviewSentAt = 0;
 
   private scale = 1;
   private offsetX = 0;
@@ -60,8 +64,8 @@ export class Game {
     this.renderer = new CanvasRenderer(canvas, this.ctx);
     this.shapeManager = new ShapeManager();
 
-    this.init();
     this.initHandlers();
+    this.init();
     this.initMouseHandlers();
   }
 
@@ -187,7 +191,10 @@ export class Game {
    * Clear and re-render the canvas
    */
   clearCanvas(): void {
-    this.renderer.renderAll(this.shapeManager.getAllShapes(), this.viewport);
+    this.renderer.renderAll(
+      [...this.shapeManager.getAllShapes(), ...this.remotePreviewShapes.values()],
+      this.viewport
+    );
     this.applyTransform();
   }
 
@@ -307,9 +314,27 @@ export class Game {
    * @param shape - Shape to broadcast
    */
   private sendShapeToServer(shape: Shape): void {
+    if (this.socket.readyState !== WebSocket.OPEN) return;
+
     this.socket.send(
       JSON.stringify({
         type: "chat",
+        message: JSON.stringify({ shape }),
+        roomId: this.roomId,
+      })
+    );
+  }
+
+  private sendPreviewToServer(shape: Shape | null, force = false): void {
+    if (this.socket.readyState !== WebSocket.OPEN) return;
+
+    const now = Date.now();
+    if (!force && now - this.lastPreviewSentAt < 33) return;
+    this.lastPreviewSentAt = now;
+
+    this.socket.send(
+      JSON.stringify({
+        type: "drawing_preview",
         message: JSON.stringify({ shape }),
         roomId: this.roomId,
       })
@@ -320,6 +345,8 @@ export class Game {
    * Send clear all command to server
    */
   private sendClearToServer(): void {
+    if (this.socket.readyState !== WebSocket.OPEN) return;
+
     this.socket.send(
       JSON.stringify({
         type: "clear_all",
@@ -348,6 +375,10 @@ export class Game {
     } catch (error) {
       console.log("No existing shapes found or error loading:", error);
     }
+
+    this.isHydrated = true;
+    this.queuedRemoteShapes.forEach((shape) => this.shapeManager.addShape(shape));
+    this.queuedRemoteShapes = [];
 
     this.clearCanvas();
   }
@@ -378,12 +409,37 @@ export class Game {
       if (data.type === "clear_all") {
         console.log("Received clear_all command from server");
         this.shapeManager.clearAll();
+        this.remotePreviewShapes.clear();
         this.clearCanvas();
         return;
       }
 
+      if (data.type === "drawing_preview") {
+        try {
+          const parsedMessage = JSON.parse(data.message);
+
+          if (parsedMessage.shape) {
+            this.remotePreviewShapes.set(data.from, parsedMessage.shape);
+          } else {
+            this.remotePreviewShapes.delete(data.from);
+          }
+
+          this.clearCanvas();
+        } catch (error) {
+          console.error("Invalid drawing preview payload:", data.message, error);
+        }
+        return;
+      }
+
       if (data.type === "chat") {
-        const parsedMessage = JSON.parse(data.message);
+        let parsedMessage: any;
+
+        try {
+          parsedMessage = JSON.parse(data.message);
+        } catch (error) {
+          console.error("Invalid drawing payload:", data.message, error);
+          return;
+        }
 
         if (parsedMessage.type === "user_joined") {
           this.currentUserId = parsedMessage.userId;
@@ -393,7 +449,13 @@ export class Game {
         if (parsedMessage.type === "clear_all") {
           this.shapeManager.clearAll();
         } else if (parsedMessage.shape) {
-          this.shapeManager.addShape(parsedMessage.shape);
+          this.remotePreviewShapes.delete(data.from);
+
+          if (this.isHydrated) {
+            this.shapeManager.addShape(parsedMessage.shape);
+          } else {
+            this.queuedRemoteShapes.push(parsedMessage.shape);
+          }
         }
 
         this.clearCanvas();
@@ -522,6 +584,7 @@ export class Game {
         };
         this.shapeManager.addShape(shape);
         this.sendShapeToServer(shape);
+        this.sendPreviewToServer(null, true);
       }
       this.currentPath = [];
       this.lastPoint = null;
@@ -543,6 +606,7 @@ export class Game {
         };
         this.shapeManager.addShape(shape);
         this.sendShapeToServer(shape);
+        this.sendPreviewToServer(null, true);
       }
       this.currentPath = [];
       this.lastPoint = null;
@@ -587,6 +651,7 @@ export class Game {
       if (shape) {
         this.shapeManager.addShape(shape);
         this.sendShapeToServer(shape);
+        this.sendPreviewToServer(null, true);
         this.clearCanvas();
       }
     }
@@ -628,6 +693,29 @@ export class Game {
 
             this.clearCanvas();
             if (this.currentPath.length > 1) {
+              const previewShape: Shape = this.selectedTool === "eraser"
+                ? {
+                    type: "eraser",
+                    startX: this.currentPath[0].x,
+                    startY: this.currentPath[0].y,
+                    endX: this.currentPath[this.currentPath.length - 1].x,
+                    endY: this.currentPath[this.currentPath.length - 1].y,
+                    strokeWidth: this.strokeWidth,
+                    path: this.currentPath,
+                  }
+                : {
+                    type: "pencil",
+                    startX: this.currentPath[0].x,
+                    startY: this.currentPath[0].y,
+                    endX: this.currentPath[this.currentPath.length - 1].x,
+                    endY: this.currentPath[this.currentPath.length - 1].y,
+                    color: this.selectedColor,
+                    strokeWidth: this.strokeWidth,
+                    path: this.currentPath,
+                  };
+
+              this.sendPreviewToServer(previewShape);
+
               if (this.selectedTool === "eraser") {
                 this.ctx.save();
                 this.ctx.globalCompositeOperation = "destination-out";
@@ -653,16 +741,30 @@ export class Game {
         if (this.selectedTool === "rect") {
           const width = currentX - this.startX;
           const height = currentY - this.startY;
-          this.ctx.strokeRect(
-            Math.min(this.startX, currentX),
-            Math.min(this.startY, currentY),
-            Math.abs(width),
-            Math.abs(height)
-          );
+          const previewShape: Shape = {
+            type: "rect",
+            x: Math.min(this.startX, currentX),
+            y: Math.min(this.startY, currentY),
+            width: Math.abs(width),
+            height: Math.abs(height),
+            color: this.selectedColor,
+            strokeWidth: this.strokeWidth,
+          };
+          this.sendPreviewToServer(previewShape);
+          this.ctx.strokeRect(previewShape.x, previewShape.y, previewShape.width, previewShape.height);
         } else if (this.selectedTool === "circle") {
           const radius = Math.sqrt(
             Math.pow(currentX - this.startX, 2) + Math.pow(currentY - this.startY, 2)
           );
+          const previewShape: Shape = {
+            type: "circle",
+            centerX: this.startX,
+            centerY: this.startY,
+            radius,
+            color: this.selectedColor,
+            strokeWidth: this.strokeWidth,
+          };
+          this.sendPreviewToServer(previewShape);
           this.ctx.beginPath();
           this.ctx.arc(this.startX, this.startY, radius, 0, Math.PI * 2);
           this.ctx.stroke();
@@ -724,7 +826,12 @@ export class Game {
     this.lastPanPoint = { x: 0, y: 0 };
 
     if (e.touches.length === 0) {
-      this.mouseUpHandler({} as MouseEvent);
+      const touch = e.changedTouches[0];
+      this.mouseUpHandler({
+        clientX: touch?.clientX ?? 0,
+        clientY: touch?.clientY ?? 0,
+        button: 0,
+      } as MouseEvent);
     }
   };
 

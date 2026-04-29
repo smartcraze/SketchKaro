@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { X, Palette, Mouse, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +9,10 @@ export function WelcomeOverlay() {
 
   useEffect(() => {
     // Check if user has seen the welcome before
+    if (typeof localStorage?.getItem !== "function") {
+      return;
+    }
+
     const hasSeenWelcome = localStorage.getItem("sketchkaro-welcome-seen");
     if (!hasSeenWelcome) {
       setIsVisible(true);
@@ -15,7 +21,9 @@ export function WelcomeOverlay() {
 
   const handleDismiss = () => {
     setIsVisible(false);
-    localStorage.setItem("sketchkaro-welcome-seen", "true");
+    if (typeof localStorage?.setItem === "function") {
+      localStorage.setItem("sketchkaro-welcome-seen", "true");
+    }
   };
 
   if (!isVisible) return null;

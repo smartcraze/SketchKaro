@@ -24,7 +24,7 @@ export function WobbleCardDemo() {
           width={480}
           height={480}
           alt="Sketch Karo whiteboard preview"
-          className="absolute -right-4 md:-right-[25%] -bottom-10 object-contain opacity-80 rounded-2xl grayscale"
+          className="absolute -right-4 md:-right-[25%] -bottom-10 h-auto w-auto object-contain opacity-80 rounded-2xl grayscale"
         />
       </WobbleCard>
 
@@ -54,7 +54,7 @@ export function WobbleCardDemo() {
           width={480}
           height={480}
           alt="Sketch Karo whiteboard preview"
-          className="absolute -right-16 md:-right-[10%] -bottom-50 object-contain opacity-80 rounded-2xl"
+          className="absolute -right-16 md:-right-[10%] -bottom-50 h-auto w-auto object-contain opacity-80 rounded-2xl"
         />
       
       </WobbleCard>

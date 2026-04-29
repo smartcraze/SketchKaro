@@ -14,6 +14,36 @@ interface User {
 
 const users = new Map<WebSocket, User>();
 
+function sendToRoom(roomId: string, payload: unknown, except?: WebSocket) {
+  const serialized = JSON.stringify(payload);
+
+  for (const [client, user] of users.entries()) {
+    if (client !== except && user.rooms.includes(roomId)) {
+      client.send(serialized);
+    }
+  }
+}
+
+function getRoomConnectionCount(roomId: string): number {
+  let count = 0;
+
+  for (const user of users.values()) {
+    if (user.rooms.includes(roomId)) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+function broadcastPresence(roomId: string) {
+  sendToRoom(roomId, {
+    type: "presence_count",
+    roomId,
+    count: getRoomConnectionCount(roomId),
+  });
+}
+
 /**
  * Verify and decode JWT token
  * 
@@ -123,11 +153,14 @@ const server = Bun.serve({
             console.log(`${user.userId} joined room ${parsedData.roomId}`);
           }
           (ws as any).subscribe(parsedData.roomId);
+          broadcastPresence(parsedData.roomId);
           break;
 
         case "leave_room":
           user.rooms = user.rooms.filter((room) => room !== parsedData.roomId);
+          (ws as any).unsubscribe(parsedData.roomId);
           console.log(`${user.userId} left room ${parsedData.roomId}`);
+          broadcastPresence(parsedData.roomId);
           break;
 
         case "chat":
@@ -140,34 +173,53 @@ const server = Bun.serve({
             return;
           }
 
+          sendToRoom(
+            parsedData.roomId,
+            {
+              type: "chat",
+              roomId: parsedData.roomId,
+              message: parsedData.message,
+              from: user.userId,
+            },
+            ws as unknown as WebSocket
+          );
+
           const isDemoRoomForDrawing = parsedData.roomId.startsWith('demo-');
 
           if (!isDemoRoomForDrawing) {
-            try {
-              await db.drawing.create({
+            db.drawing.create({
                 data: {
                   roomId: Number(parsedData.roomId),
                   message: parsedData.message,
                   userId: user.userId,
                 },
-              });
-            } catch (error) {
+              })
+              .catch((error) => {
               console.error("Error saving drawing message:", error);
-            }
+              });
+          }
+          break;
+
+        case "drawing_preview":
+          if (!parsedData.roomId || !parsedData.message) {
+            console.warn("Drawing preview missing roomId or message");
+            return;
+          }
+          if (!user.rooms.includes(parsedData.roomId)) {
+            console.warn(`User ${user.userId} not in room ${parsedData.roomId}`);
+            return;
           }
 
-          for (const [client, u] of users.entries()) {
-            if (u.rooms.includes(parsedData.roomId)) {
-              client.send(
-                JSON.stringify({
-                  type: "chat",
-                  roomId: parsedData.roomId,
-                  message: parsedData.message,
-                  from: user.userId,
-                })
-              );
-            }
-          }
+          sendToRoom(
+            parsedData.roomId,
+            {
+              type: "drawing_preview",
+              roomId: parsedData.roomId,
+              message: parsedData.message,
+              from: user.userId,
+            },
+            ws as unknown as WebSocket
+          );
           break;
         
         case "chat_message":
@@ -196,15 +248,16 @@ const server = Bun.serve({
             }
           }
 
-          server.publish(
+          sendToRoom(
             parsedData.roomId,
-            JSON.stringify({
+            {
               type: "chat_message",
               roomId: parsedData.roomId,
               message: parsedData.message,
               from: user.userId,
               name: user.name,
-            })
+              clientMessageId: parsedData.clientMessageId,
+            }
           );
           break;
 
@@ -240,17 +293,15 @@ const server = Bun.serve({
             }
           }
 
-          for (const [client, u] of users.entries()) {
-            if (u.rooms.includes(parsedData.roomId)) {
-              client.send(
-                JSON.stringify({
-                  type: "clear_all",
-                  roomId: parsedData.roomId,
-                  from: user.userId,
-                })
-              );
-            }
-          }
+          sendToRoom(
+            parsedData.roomId,
+            {
+              type: "clear_all",
+              roomId: parsedData.roomId,
+              from: user.userId,
+            },
+            ws as unknown as WebSocket
+          );
           break;
 
         default:
@@ -265,8 +316,10 @@ const server = Bun.serve({
     close(ws) {
       const user = users.get(ws as unknown as WebSocket);
       if (user) {
+        const rooms = [...user.rooms];
         console.log(`❌ Disconnected: ${user.userId}`);
         users.delete(ws as unknown as WebSocket);
+        rooms.forEach((roomId) => broadcastPresence(roomId));
       }
     },
   },

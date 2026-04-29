@@ -7,6 +7,7 @@ import { Shape, Viewport } from "./types";
 export class CanvasRenderer {
   private ctx: CanvasRenderingContext2D;
   private canvas: HTMLCanvasElement;
+  private backgroundColor = "#000000";
 
   constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
     this.canvas = canvas;
@@ -17,7 +18,12 @@ export class CanvasRenderer {
    * Clear the entire canvas
    */
   clear(): void {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.paintBackground();
+  }
+
+  private paintBackground(): void {
+    this.ctx.fillStyle = this.backgroundColor;
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
   /**
@@ -178,7 +184,7 @@ export class CanvasRenderer {
   renderAll(shapes: Shape[], viewport?: Viewport): void {
     this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.paintBackground();
 
     if (viewport) {
       this.ctx.setTransform(viewport.scale, 0, 0, viewport.scale, viewport.x, viewport.y);
@@ -196,7 +202,7 @@ export class CanvasRenderer {
   renderAllForExport(shapes: Shape[]): void {
     this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.paintBackground();
     shapes.forEach((shape) => this.renderShape(shape));
     this.ctx.restore();
   }
