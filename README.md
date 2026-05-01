@@ -31,6 +31,12 @@
 > 🔗 [Live Demo](https://sketchkaro.surajv.me)
 
 Login, draw with friends in real-time, and watch as ideas come to life — all inside your browser.
+<img width="2842" height="1577" alt="image" src="https://github.com/user-attachments/assets/1bf286dd-e797-4b00-8548-1a19afbc55fd" />
+<img width="2847" height="1570" alt="image" src="https://github.com/user-attachments/assets/52db3ac5-a86c-4a2a-8326-f4ddb06bf9ea" />
+<img width="2833" height="1539" alt="image" src="https://github.com/user-attachments/assets/5b8c0e36-e78b-4798-a0ed-3419b447c0c1" />
+<img width="2779" height="1546" alt="image" src="https://github.com/user-attachments/assets/cae3cc40-c1d5-43e4-ba82-3c15d760597b" />
+<img width="2876" height="1571" alt="image" src="https://github.com/user-attachments/assets/548dc067-d65f-43cc-946a-77a48885a9f0" />
+
 
 
 ## 💪 Local Setup
