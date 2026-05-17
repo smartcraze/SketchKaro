@@ -63,7 +63,11 @@ export default function SignupPage() {
           <ArrowLeft className="h-4 w-4" />
           Home
         </Link>
-        <div className="text-sm font-black uppercase tracking-tighter">[ SketchKaro ]</div>
+        <div className="text-sm font-black uppercase tracking-tighter"><img
+          src="/sketchkaro.png"
+          alt="SketchKaro"
+          className="h-8 sm:h-10 w-auto object-contain"
+        /></div>
       </header>
 
       <main className="relative z-10 grid min-h-[calc(100vh-73px)] lg:grid-cols-12">
@@ -90,15 +94,15 @@ export default function SignupPage() {
                 <div className="flex items-center gap-3 border border-white/15 bg-white/[0.04] px-4 focus-within:border-[#E3FE00]">
                   <UserRound className="h-4 w-4 text-white/35" />
                   <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  placeholder="John Doe"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
+                    type="text"
+                    id="name"
+                    name="name"
+                    placeholder="John Doe"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
                     className="h-13 w-full bg-transparent text-white outline-none placeholder:text-white/25"
-                />
+                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -106,15 +110,15 @@ export default function SignupPage() {
                 <div className="flex items-center gap-3 border border-white/15 bg-white/[0.04] px-4 focus-within:border-[#E3FE00]">
                   <Mail className="h-4 w-4 text-white/35" />
                   <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
                     className="h-13 w-full bg-transparent text-white outline-none placeholder:text-white/25"
-                />
+                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -122,15 +126,15 @@ export default function SignupPage() {
                 <div className="flex items-center gap-3 border border-white/15 bg-white/[0.04] px-4 focus-within:border-[#E3FE00]">
                   <LockKeyhole className="h-4 w-4 text-white/35" />
                   <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  placeholder="********"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="********"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
                     className="h-13 w-full bg-transparent text-white outline-none placeholder:text-white/25"
-                />
+                  />
                 </div>
               </div>
               <button
