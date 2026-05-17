@@ -206,25 +206,51 @@ export default function BrutalistLanding() {
       <DecorativeGrid />
 
       {/* Top Navbar */}
-      <header className="relative z-20 flex justify-between items-center p-5 sm:p-6 lg:p-8 border-b border-white/10 bg-black/50 backdrop-blur-xl">
+
+      <header className="relative z-20 flex justify-between items-center p-5 sm:p-6 lg:p-4 border-b border-white/10 bg-black/50 backdrop-blur-xl">
+
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="text-lg sm:text-xl font-bold tracking-tighter uppercase"
+          className="flex items-center"
         >
-          [ SKETCHKARO ]
+          <img
+            src="/sketchkaro.png"
+            alt="SketchKaro"
+            className="h-8 sm:h-10 w-auto object-contain"
+          />
         </motion.div>
 
         <nav className="hidden lg:flex items-center gap-8 text-xs uppercase tracking-[0.24em] text-white/50">
-          <a href="#features" className="hover:text-[#E3FE00] transition-colors">Features</a>
-          <a href="#workflow" className="hover:text-[#E3FE00] transition-colors">Workflow</a>
-          <a href="#footer" className="hover:text-[#E3FE00] transition-colors">Contact</a>
+          <a
+            href="#features"
+            className="hover:text-[#E3FE00] transition-colors"
+          >
+            Features
+          </a>
+
+          <a
+            href="#workflow"
+            className="hover:text-[#E3FE00] transition-colors"
+          >
+            Workflow
+          </a>
+
+          <a
+            href="#footer"
+            className="hover:text-[#E3FE00] transition-colors"
+          >
+            Contact
+          </a>
         </nav>
 
         <div className="flex gap-3 sm:gap-4 items-center">
           {isLoggedIn ? (
             <div className="flex items-center gap-4 sm:gap-6">
-              <span className="text-sm uppercase text-white/50 hidden sm:block">ID: {userName}</span>
+              <span className="text-sm uppercase text-white/50 hidden sm:block">
+                ID: {userName}
+              </span>
+
               <button
                 onClick={handleLogout}
                 className="text-xs uppercase tracking-widest hover:text-[#E3FE00] transition-colors"
@@ -247,117 +273,117 @@ export default function BrutalistLanding() {
       <main className="relative z-10">
         <section className="container mx-auto px-6 lg:px-8 pt-16 sm:pt-20 pb-24 lg:pb-32">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8">
-          {/* Left Column: Huge Type & Context */}
-          <div className="col-span-1 lg:col-span-7 flex flex-col justify-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 mb-8 bg-white/5 border border-white/10 px-4 py-1 w-max"
-            >
-              <div className="w-2 h-2 rounded-full bg-[#E3FE00] animate-pulse" />
-              <span className="text-xs uppercase tracking-widest text-[#E3FE00]">System Online V2.0</span>
-            </motion.div>
+            {/* Left Column: Huge Type & Context */}
+            <div className="col-span-1 lg:col-span-7 flex flex-col justify-center">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="inline-flex items-center gap-2 mb-8 bg-white/5 border border-white/10 px-4 py-1 w-max"
+              >
+                <div className="w-2 h-2 rounded-full bg-[#E3FE00] animate-pulse" />
+                <span className="text-xs uppercase tracking-widest text-[#E3FE00]">System Online V2.0</span>
+              </motion.div>
 
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-5xl sm:text-6xl md:text-8xl lg:text-[7rem] leading-[0.86] font-extrabold tracking-tighter uppercase"
-            >
-              Architect
-              <br />
-              <span className="text-transparent" style={{ WebkitTextStroke: "2px #F3F3F3" }}>Your Ideas</span>
-              <br />
-              Instantly.
-            </motion.h1>
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-5xl sm:text-6xl md:text-8xl lg:text-[7rem] leading-[0.86] font-extrabold tracking-tighter uppercase"
+              >
+                Architect
+                <br />
+                <span className="text-transparent" style={{ WebkitTextStroke: "2px #F3F3F3" }}>Your Ideas</span>
+                <br />
+                Instantly.
+              </motion.h1>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="mt-8 text-lg lg:text-xl text-white/50 max-w-xl font-sans font-light"
-            >
-              SketchKaro is a brutal, high-fidelity collaborative canvas. Drop in, draw, coordinate, and leave no trace unless you want to. No friction. No delays.
-            </motion.p>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="mt-8 text-lg lg:text-xl text-white/50 max-w-xl font-sans font-light"
+              >
+                SketchKaro is a brutal, high-fidelity collaborative canvas. Drop in, draw, coordinate, and leave no trace unless you want to. No friction. No delays.
+              </motion.p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.45 }}
-              className="mt-10 grid grid-cols-3 max-w-xl border border-white/10"
-            >
-              {stats.map((item) => (
-                <div key={item.label} className="p-4 border-r border-white/10 last:border-r-0">
-                  <div className="text-2xl md:text-3xl font-black text-[#E3FE00]">{item.value}</div>
-                  <div className="mt-1 text-[10px] uppercase tracking-[0.22em] text-white/40">{item.label}</div>
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45 }}
+                className="mt-10 grid grid-cols-3 max-w-xl border border-white/10"
+              >
+                {stats.map((item) => (
+                  <div key={item.label} className="p-4 border-r border-white/10 last:border-r-0">
+                    <div className="text-2xl md:text-3xl font-black text-[#E3FE00]">{item.value}</div>
+                    <div className="mt-1 text-[10px] uppercase tracking-[0.22em] text-white/40">{item.label}</div>
+                  </div>
+                ))}
+              </motion.div>
+            </div>
+
+            {/* Right Column: Interaction Panel */}
+            <div className="col-span-1 lg:col-span-4 lg:col-start-9 flex flex-col justify-center">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 }}
+                className="border border-white/20 bg-black/40 backdrop-blur-xl p-8 shadow-2xl relative group"
+              >
+                {/* Corner accents */}
+                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white" />
+                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white" />
+                <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white" />
+                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white" />
+
+                <h2 className="text-xl tracking-tight uppercase mb-6 flex items-center gap-2">
+                  <MousePointer2 className="w-5 h-5 text-[#E3FE00]" />
+                  Command Module
+                </h2>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-xs uppercase tracking-widest text-white/50 block">Namespace / Room ID</label>
+                    <input
+                      type="text"
+                      placeholder="E.g. alpha-sector-9"
+                      value={roomInput}
+                      onChange={(e) => setRoomInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleJoinRoom();
+                        }
+                      }}
+                      className="w-full bg-white/5 border border-white/20 p-4 focus:outline-none focus:border-[#E3FE00] transition-colors text-white placeholder:text-white/20"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      onClick={handleCreateRoom}
+                      className="flex-1 bg-[#E3FE00] text-black font-bold uppercase tracking-tight py-4 flex items-center justify-center gap-2 hover:bg-white transition-colors"
+                    >
+                      <Plus className="w-4 h-4" /> Initialize
+                    </button>
+                    <button
+                      onClick={handleJoinRoom}
+                      className="flex-1 bg-white/10 text-white font-bold uppercase tracking-tight py-4 flex items-center justify-center gap-2 hover:bg-white/20 border border-white/10 transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4" /> Connect
+                    </button>
+                  </div>
+
+                  <div className="pt-6 border-t border-white/10">
+                    <button
+                      onClick={handleDemoMode}
+                      className="w-full py-4 text-white/50 hover:text-[#E3FE00] hover:bg-white/5 transition-colors uppercase text-sm tracking-widest flex items-center justify-center gap-2"
+                    >
+                      <Play className="w-4 h-4" /> Enter Sandbox Demo
+                    </button>
+                  </div>
                 </div>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* Right Column: Interaction Panel */}
-          <div className="col-span-1 lg:col-span-4 lg:col-start-9 flex flex-col justify-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4 }}
-              className="border border-white/20 bg-black/40 backdrop-blur-xl p-8 shadow-2xl relative group"
-            >
-              {/* Corner accents */}
-              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white" />
-              <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white" />
-              <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white" />
-              <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white" />
-
-              <h2 className="text-xl tracking-tight uppercase mb-6 flex items-center gap-2">
-                <MousePointer2 className="w-5 h-5 text-[#E3FE00]" />
-                Command Module
-              </h2>
-
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-white/50 block">Namespace / Room ID</label>
-                  <input
-                    type="text"
-                    placeholder="E.g. alpha-sector-9"
-                    value={roomInput}
-                    onChange={(e) => setRoomInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleJoinRoom();
-                      }
-                    }}
-                    className="w-full bg-white/5 border border-white/20 p-4 focus:outline-none focus:border-[#E3FE00] transition-colors text-white placeholder:text-white/20"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    onClick={handleCreateRoom}
-                    className="flex-1 bg-[#E3FE00] text-black font-bold uppercase tracking-tight py-4 flex items-center justify-center gap-2 hover:bg-white transition-colors"
-                  >
-                    <Plus className="w-4 h-4" /> Initialize
-                  </button>
-                  <button
-                    onClick={handleJoinRoom}
-                    className="flex-1 bg-white/10 text-white font-bold uppercase tracking-tight py-4 flex items-center justify-center gap-2 hover:bg-white/20 border border-white/10 transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" /> Connect
-                  </button>
-                </div>
-
-                <div className="pt-6 border-t border-white/10">
-                  <button
-                    onClick={handleDemoMode}
-                    className="w-full py-4 text-white/50 hover:text-[#E3FE00] hover:bg-white/5 transition-colors uppercase text-sm tracking-widest flex items-center justify-center gap-2"
-                  >
-                    <Play className="w-4 h-4" /> Enter Sandbox Demo
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
+              </motion.div>
+            </div>
           </div>
         </section>
 
@@ -507,7 +533,15 @@ export default function BrutalistLanding() {
         <div className="container mx-auto px-6 lg:px-8 py-12">
           <div className="grid gap-10 lg:grid-cols-12">
             <div className="lg:col-span-5">
-              <div className="text-2xl font-black uppercase tracking-tighter">[ SketchKaro ]</div>
+              <div className="text-2xl font-black uppercase tracking-tighter">
+
+                <img
+                  src="/sketchkaro.png"
+                  alt="SketchKaro"
+                  className="h-8 sm:h-10 w-auto object-contain"
+                />
+
+              </div>
               <p className="mt-4 max-w-md text-white/50 font-sans leading-7">
                 A real-time collaborative whiteboard for sketching ideas, planning with teams, and turning rough thinking into clear visual direction.
               </p>
@@ -578,10 +612,7 @@ export default function BrutalistLanding() {
             </div>
           </div>
 
-          <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs uppercase tracking-[0.18em] text-white/35 sm:flex-row sm:items-center sm:justify-between">
-            <span>Copyright {new Date().getFullYear()} SketchKaro</span>
-            <span>Built by Suraj Vishwakarma</span>
-          </div>
+
         </div>
       </footer>
 
